@@ -1,0 +1,11 @@
+.main-button {
+    -fx-background-color: white;
+    -fx-border-color: black;
+    -fx-border-width: 2px;
+    -fx-cursor: hand;
+    -fx-font-size: 18px;
+}
+
+.main-button:pressed {
+    -fx-background-color: grey;
+}

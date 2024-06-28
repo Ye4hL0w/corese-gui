@@ -1,0 +1,15 @@
+.custom-button {
+    -fx-background-color: transparent;
+    -fx-background-radius: 0;
+    -fx-border-width: 2;
+    -fx-cursor: hand;
+    -fx-font-size: 22px;
+}
+
+.custom-button:pressed {
+    -fx-background-color: #b4a7d6;
+}
+
+.active-button {
+    -fx-background-color: #b4a7d6;
+}

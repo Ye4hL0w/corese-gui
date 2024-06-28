@@ -1,0 +1,78 @@
+/* Text area */
+
+.text-area:focused {
+    -fx-border-color: transparent;
+    -fx-background-color: white;
+    -fx-background-insets: 0;
+    -fx-background-radius: 0;
+    -fx-border-width: 0;
+}
+
+.hand-on-button {
+    -fx-cursor: hand;
+}
+
+.unsaved-tab-label {
+    -fx-text-fill: red;
+}
+
+
+/* List view */
+
+.custom-list-view {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.custom-list-view .list-cell {
+    -fx-background-color: transparent;
+    -fx-text-fill: black;
+}
+
+.custom-list-view .scroll-bar:vertical,
+.custom-list-view .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-max-width: 0;
+    -fx-max-height: 0;
+}
+
+/* RDF Section in Data */
+
+.check-box {
+    -fx-font-size: 32px;
+    -fx-cursor: hand;
+}
+
+.titled-pane {
+    -fx-font-size: 32px;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-padding: 0;
+}
+
+.titled-pane > .title {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+.titled-pane > .content {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+/* Alert */
+
+.custom-alert {
+    -fx-pref-width: 600px;
+    -fx-pref-height: 100px;
+}
+
+/* ScrollPane */
+
+.custom-scrollPane {
+    -fx-background: white;
+    -fx-background-color: white;
+    -fx-border-color: white;
+ }
+
+
