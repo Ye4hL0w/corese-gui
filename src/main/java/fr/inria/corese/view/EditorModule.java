@@ -60,6 +60,7 @@ public class EditorModule {
      *
      * @param primaryStage the primary stage of the application.
      * @param textArea the text area associated with the icons.
+     * @param tabPane the pane in which the icons are contained.
      * @return a {@link VBox} containing the file operation icons.
      *
      * @see VBox

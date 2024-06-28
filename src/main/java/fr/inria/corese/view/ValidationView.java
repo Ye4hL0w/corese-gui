@@ -1,6 +1,5 @@
 package fr.inria.corese.view;
 
-import fr.inria.corese.app.App;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
@@ -10,16 +9,9 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
-import javafx.stage.DirectoryChooser;
-import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.materialdesign2.*;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.util.Objects;
 
 public class ValidationView {
 
@@ -35,18 +27,20 @@ public class ValidationView {
         VBox validation = createValidation();
         return validation;
     }
-    /* First display */
-
 
     public VBox createValidation() {
         VBox vbValidation = new VBox();
+        vbValidation.setSpacing(10);
+        vbValidation.setPadding(new Insets(20));
 
-        HBox hBox = createEditorContent(tabPane);
+        HBox hbox = createEditorContent();
 
-        vbValidation.getChildren().add(hBox);
+        vbValidation.getChildren().addAll(hbox);
 
         return vbValidation;
     }
+
+    /* Validation Editor */
 
     /**
      * Creates the editor content view with a tab pane and file browsing section.
@@ -59,17 +53,17 @@ public class ValidationView {
      * @see TabPane
      *
      */
-    public HBox createEditorContent(TabPane tabPane) {
+    public HBox createEditorContent() {
         border = new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(2)));
 
         HBox hbCenter = new HBox();
+        VBox.setVgrow(hbCenter, Priority.ALWAYS);
         hbCenter.setAlignment(Pos.CENTER);
 //        vbCenter.setBackground(new Background(new BackgroundFill(Color.GREEN, CornerRadii.EMPTY, null)));
 
         /* File section */
 
         tabPane = new TabPane();
-        tabPane.setPadding(new Insets(20, 20, 20, 20));
         tabPane.getStyleClass().add("MyTabPane");
         HBox.setHgrow(tabPane, Priority.ALWAYS);
 
@@ -81,13 +75,12 @@ public class ValidationView {
 
         FontIcon plusIcon = new FontIcon(MaterialDesignP.PLUS);
         plusIcon.setIconSize(24);
-        TabPane finalTabPane = tabPane;
         plusIcon.setOnMouseClicked(event -> {
-            Tab newTab = new Tab("Untilted " + (finalTabPane.getTabs().size()), createTabContent());
+            Tab newTab = new Tab("Untilted " + (tabPane.getTabs().size()), createTabContent());
             tabList.add(newTab);
             newTab.getStyleClass().add("MyTab");
-            finalTabPane.getTabs().add(tabList.size() - 1, newTab);
-            finalTabPane.getSelectionModel().select(newTab);
+            tabPane.getTabs().add(tabList.size() - 1, newTab);
+            tabPane.getSelectionModel().select(newTab);
         });
         plusTab.setGraphic(plusIcon);
 
@@ -111,7 +104,6 @@ public class ValidationView {
                 tabContent.getChildren().add(((BorderPane) newTab.getContent()).getCenter());
             }
         });
-
 
         hbCenter.getChildren().addAll(tabPane);
 
@@ -138,18 +130,29 @@ public class ValidationView {
         HBox.setHgrow(textArea, Priority.ALWAYS);
         textArea.setFocusTraversable(false);
 
+        VBox vbResult = createResultContent();
+        VBox.setVgrow(vbResult, Priority.ALWAYS);
+        vbResult.setPadding(new Insets(10, 0, 0, 0));
+
         GridPane textGrid = new GridPane();
         textGrid.add(editorModule.createLineNumberArea(textArea), 0, 0);
         textGrid.add(textArea, 1, 0);
+        textGrid.add(vbResult, 1, 1);
         textGrid.setPadding(new Insets(0,10,0,0));
+        textGrid.setVgap(20);
         GridPane.setHgrow(textArea, Priority.ALWAYS);
         GridPane.setVgrow(textArea, Priority.ALWAYS);
         HBox.setHgrow(textGrid, Priority.ALWAYS);
 
+        RowConstraints row1 = new RowConstraints();
+        row1.setPercentHeight(66.67);
+        RowConstraints row2 = new RowConstraints();
+        row2.setPercentHeight(33.33);
+        textGrid.getRowConstraints().addAll(row1, row2);
+
         /* All the icon button */
 //        VBox iconsBox = createIconsBox(primaryStage, textArea);
         VBox iconsBox = editorModule.createIconsBox(primaryStage, textArea, tabPane);
-
 
         hbox.getChildren().addAll(textGrid, iconsBox);
 
@@ -177,6 +180,15 @@ public class ValidationView {
         return tabContent;
     }
 
+    /* Validation result */
 
+    public VBox createResultContent() {
+        VBox vbox = new VBox();
+        VBox.setVgrow(vbox, Priority.ALWAYS);
+        vbox.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, null)));
+        vbox.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
+
+        return vbox;
+    }
 
 }

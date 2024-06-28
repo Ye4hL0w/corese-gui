@@ -412,7 +412,7 @@ public class DataView {
 //        String loadingStr = "Loading " + getFileExtension(file) + " File from path : ";
 //        Text loadingText = new Text(loadingStr);
 //        loadingText.setFill(Color.rgb(128,128,128));
-        addLogMessage("Loading "+ getFileExtension(file) + " File from path: " + file.getAbsolutePath()  + "\n\n", Color.rgb(184,134,11));
+        addLogMessage("Loading "+ getFileExtension(file) + " File from path: " + file.getAbsolutePath()  + "\n", Color.rgb(184,134,11));
         addLogMessage("Loading is done\n", Color.rgb(128,128,128));
 //        addLogMessage(" ", Color.WHITE);
     }
