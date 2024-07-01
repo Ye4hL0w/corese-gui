@@ -4,7 +4,11 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
@@ -16,7 +20,11 @@ import javafx.util.Duration;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.materialdesign2.*;
 
+import java.awt.*;
 import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
@@ -254,17 +262,12 @@ public class DataView {
         scrollPane.getStyleClass().add("custom-scrollPane");
 
 
-        CheckBox rdfsSubset = new CheckBox("RDFS Subset");
-        CheckBox rdfsRl = new CheckBox("RDFS RL");
-        CheckBox owlRl = new CheckBox("OWL RL");
-        CheckBox owlRlExtended = new CheckBox("OWL RL Extended");
-        CheckBox owlClean = new CheckBox("OWL Clean");
+        CheckBox rdfsSubset = createHyperlinkCheckBox("RDFS Subset", "https://www.w3.org/TR/rdf-mt/");
+        CheckBox rdfsRl = createHyperlinkCheckBox("RDFS RL", "https://owl-rl.readthedocs.io/en/latest/");
+        CheckBox owlRl = createHyperlinkCheckBox("OWL RL", "https://owl-rl.readthedocs.io/en/latest/");
+        CheckBox owlRlExtended = createHyperlinkCheckBox("OWL RL Extended", "https://owl-rl.readthedocs.io/en/latest/stubs/owlrl.html");
+        CheckBox owlClean = createHyperlinkCheckBox("OWL Clean", "https://ebooks.iospress.nl/publication/3236");
 
-        rdfsSubset.getStyleClass().add("check-box");
-        rdfsRl.getStyleClass().add("check-box");
-        owlRl.getStyleClass().add("check-box");
-        owlRlExtended.getStyleClass().add("check-box");
-        owlClean.getStyleClass().add("check-box");
 
         VBox rdfsContent = new VBox(rdfsSubset, rdfsRl);
         TitledPane rdfsPane = new TitledPane("RDFS", rdfsContent);
@@ -285,9 +288,29 @@ public class DataView {
 
     public VBox createStatsContent() {
         VBox vbox = new VBox();
+        vbox.setSpacing(10);
         vbox.setPadding(new Insets(10));
         vbox.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, null)));
         vbox.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
+
+        int sementicElements = 0;
+        int triplet = 0;
+        int graph = 0;
+        int rules = 0;
+
+        Label label1 = new Label("Semantic elements loaded: " + sementicElements);
+        label1.setFont(new Font("Arial", 26));
+
+        Label label2 = new Label("Number of triplet: " + triplet);
+        label2.setFont(new Font("Arial", 26));
+
+        Label label3 = new Label("Number of graph: " + graph);
+        label3.setFont(new Font("Arial", 26));
+
+        Label label4 = new Label("Number of rules loaded: " + rules);
+        label4.setFont(new Font("Arial", 26));
+
+        vbox.getChildren().addAll(label1, label2, label3, label4);
 
         return vbox;
     }
@@ -417,4 +440,22 @@ public class DataView {
 //        addLogMessage(" ", Color.WHITE);
     }
 
+    /* Create HyperText for rules */
+
+    private CheckBox createHyperlinkCheckBox(String text, String url) {
+        CheckBox checkBox = new CheckBox(text);
+        checkBox.getStyleClass().add("check-box");
+
+        checkBox.setOnMouseClicked(event -> {
+            if (event.getButton() == MouseButton.SECONDARY) {
+                try {
+                    Desktop.getDesktop().browse(new URI(url));
+                } catch (IOException | URISyntaxException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        return checkBox;
+    }
 }

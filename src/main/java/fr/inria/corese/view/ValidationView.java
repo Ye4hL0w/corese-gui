@@ -11,6 +11,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import org.kordamp.ikonli.javafx.FontIcon;
+import org.kordamp.ikonli.javafx.Icon;
 import org.kordamp.ikonli.materialdesign2.*;
 
 public class ValidationView {
@@ -34,7 +35,6 @@ public class ValidationView {
         vbValidation.setPadding(new Insets(20));
 
         HBox hbox = createEditorContent();
-
         vbValidation.getChildren().addAll(hbox);
 
         return vbValidation;
@@ -113,7 +113,6 @@ public class ValidationView {
     private VBox createTabContent() {
 
         VBox tabContent = new VBox();
-//        tabContent.setPadding(new Insets(20,0,0,0));
         VBox.setVgrow(tabContent, Priority.ALWAYS);
         tabContent.setBorder(border);
 
@@ -124,11 +123,27 @@ public class ValidationView {
 
         /* Editor section */
 
+        StackPane stackPane = new StackPane();
+
         TextArea textArea = new TextArea();
         textArea.setPadding(new Insets(10));
         textArea.setFont(Font.font("Arial", 14));
         HBox.setHgrow(textArea, Priority.ALWAYS);
         textArea.setFocusTraversable(false);
+
+        Button runButton = new Button("Run");
+        FontIcon runIcon = new FontIcon(MaterialDesignP.PLAY_OUTLINE);
+        runIcon.setIconSize(34);
+        runButton.setGraphic(runIcon);
+        runButton.setOnAction(event -> {
+
+        });
+        runButton.getStyleClass().add("main-button");
+
+        StackPane.setAlignment(runButton, Pos.BOTTOM_RIGHT);
+        StackPane.setMargin(runButton, new Insets(0, 25, 25, 0));
+
+        stackPane.getChildren().addAll(textArea, runButton);
 
         VBox vbResult = createResultContent();
         VBox.setVgrow(vbResult, Priority.ALWAYS);
@@ -136,12 +151,12 @@ public class ValidationView {
 
         GridPane textGrid = new GridPane();
         textGrid.add(editorModule.createLineNumberArea(textArea), 0, 0);
-        textGrid.add(textArea, 1, 0);
+        textGrid.add(stackPane, 1, 0);
         textGrid.add(vbResult, 1, 1);
         textGrid.setPadding(new Insets(0,10,0,0));
         textGrid.setVgap(20);
-        GridPane.setHgrow(textArea, Priority.ALWAYS);
-        GridPane.setVgrow(textArea, Priority.ALWAYS);
+        GridPane.setHgrow(stackPane, Priority.ALWAYS);
+        GridPane.setVgrow(stackPane, Priority.ALWAYS);
         HBox.setHgrow(textGrid, Priority.ALWAYS);
 
         RowConstraints row1 = new RowConstraints();

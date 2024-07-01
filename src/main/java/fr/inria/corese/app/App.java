@@ -21,6 +21,8 @@ public class App extends Application {
         primaryStage.setTitle("Corese");
         primaryStage.setWidth(1920);
         primaryStage.setHeight(1080);
+        primaryStage.setMinWidth(1420);
+        primaryStage.setMinHeight(740);
 
         root = new BorderPane();
         Scene scene = new Scene(root, primaryStage.getWidth(), primaryStage.getHeight());
