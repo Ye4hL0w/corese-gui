@@ -14,7 +14,11 @@ public class App extends Application {
     }
 
     private BorderPane root;
+    private DataView dataView;
     private EditorView editorView;
+    private ValidationView validationView;
+    private QueryView queryView;
+    private SettingsView settingsView;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -31,11 +35,16 @@ public class App extends Application {
         scene.getStylesheets().add(getClass().getResource("/style/tabpane.css").toExternalForm());
         scene.getStylesheets().add(getClass().getResource("/style/custom-icon.css").toExternalForm());
         scene.getStylesheets().add(getClass().getResource("/style/main-buttons.css").toExternalForm());
+        scene.getStylesheets().add(getClass().getResource("/smartgraph/smartgraph.css").toExternalForm());
 
         MenuUI menuUI = new MenuUI(this);
         root.setLeft(menuUI.getMenu());
 
+        dataView = new DataView();
         editorView = new EditorView();
+        validationView = new ValidationView();
+        queryView = new QueryView();
+        settingsView = new SettingsView();
 
         showDataView();
 
@@ -44,7 +53,7 @@ public class App extends Application {
     }
 
     public void showDataView() {
-        root.setCenter(new DataView().getView());
+        root.setCenter(dataView.getView());
     }
 
     public void showRdfEditorView() {
@@ -52,14 +61,14 @@ public class App extends Application {
     }
 
     public void showValidationView() {
-        root.setCenter(new ValidationView().getView());
+        root.setCenter(validationView.getView());
     }
 
     public void showQueryView() {
-        root.setCenter(new QueryView().getView());
+        root.setCenter(queryView.getView());
     }
 
     public void showSettingsView() {
-        root.setCenter(new SettingsView().getView());
+        root.setCenter(settingsView.getView());
     }
 }

@@ -130,6 +130,7 @@ public class ValidationView {
         textArea.setFont(Font.font("Arial", 14));
         HBox.setHgrow(textArea, Priority.ALWAYS);
         textArea.setFocusTraversable(false);
+        textArea.setMaxHeight(600);
 
         Button runButton = new Button("Run");
         FontIcon runIcon = new FontIcon(MaterialDesignP.PLAY_OUTLINE);

@@ -43,3 +43,11 @@
     -fx-background-insets: 0, 0 0 1 0;
     -fx-padding: 0.416667em 0.166667em 0.0em 0.0em; /* overridden as 5 2 0 0 */
 }
+
+. query-tab {
+    -fx-background-color: #f0f0f0;
+    -fx-border-color: black;
+    -fx-pref-height: 35px;
+    -fx-border-width: 2px 2px 0px 2px;
+    -fx-cursor: hand;
+}

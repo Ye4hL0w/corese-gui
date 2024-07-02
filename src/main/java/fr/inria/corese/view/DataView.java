@@ -14,6 +14,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextFlow;
+import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import javafx.stage.Window;
 import javafx.util.Duration;
@@ -34,6 +35,9 @@ public class DataView {
 
     public VBox vbCenter;
     public VBox logContent;
+    public VBox vbFileItem;
+    public Button clearGraphButton;
+    public Button reloadButton;
 
     public VBox getView() {
         VBox data = createData();
@@ -63,7 +67,24 @@ public class DataView {
         openProjectButton.setGraphic(openIcon);
         openProjectButton.getStyleClass().add("main-button");
         openProjectButton.setOnAction(event -> {
+            DirectoryChooser directoryChooser = new DirectoryChooser();
+            directoryChooser.setTitle("Open Project");
 
+            File selectedDirectory = directoryChooser.showDialog(null);
+
+            if (selectedDirectory != null && selectedDirectory.isDirectory()) {
+                File[] files = selectedDirectory.listFiles();
+                if (files != null) {
+                    for (File file : files) {
+                        if (file.isFile()) {
+                            addFileItem(file, vbFileItem, clearGraphButton, reloadButton);
+                            logFileLoading(file);
+                        }
+                    }
+                }
+
+                showFilesLoadedPopup();
+            }
         });
 
         Button saveAsButton = new Button("Save as");
@@ -128,14 +149,14 @@ public class DataView {
         vbox.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, null)));
         vbox.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, null, new BorderWidths(2))));
 
-        VBox vbFileItem = new VBox();
+        vbFileItem = new VBox();
         VBox.setVgrow(vbFileItem, Priority.ALWAYS);
 
         HBox hbButton = new HBox();
         hbButton.setAlignment(Pos.BOTTOM_RIGHT);
         hbButton.setSpacing(10);
 
-        Button clearGraphButton = new Button("Clear Graph");
+        clearGraphButton = new Button("Clear Graph");
         FontIcon clearIcon = new FontIcon(MaterialDesignB.BROOM);
         clearIcon.setIconSize(34);
         clearGraphButton.setGraphic(clearIcon);
@@ -144,7 +165,7 @@ public class DataView {
             showWarningPopup();
         });
 
-        Button reloadButton = new Button("Reload files");
+        reloadButton = new Button("Reload files");
         FontIcon reloadIcon = new FontIcon(MaterialDesignR.RELOAD);
         reloadIcon.setIconSize(34);
         reloadButton.setGraphic(reloadIcon);
@@ -161,42 +182,13 @@ public class DataView {
         findButton.setGraphic(findIcon);
         findButton.getStyleClass().add("main-button");
         findButton.setOnAction(event -> {
-
             FileChooser fileChooser = new FileChooser();
             fileChooser.setTitle("Open file");
 
             File selectedFile = fileChooser.showOpenDialog(null);
 
             if (selectedFile != null) {
-                HBox hbox = new HBox();
-//                hbox.setBackground(new Background(new BackgroundFill(Color.PALEGOLDENROD, CornerRadii.EMPTY, null)));
-
-                Label fileNameLabel = new Label(selectedFile.getName());
-                fileNameLabel.setFont(Font.font("Arial", 32));
-                fileNameLabel.getStyleClass().add("hand-on-button");
-                fileNameLabel.setOnMouseClicked( e -> {
-                    showFileInfoPopup(selectedFile);
-                });
-
-                Pane spacer = new Pane();
-                HBox.setHgrow(spacer, Priority.ALWAYS);
-
-                FontIcon deleteIcon = new FontIcon(MaterialDesignD.DELETE_OUTLINE);
-                deleteIcon.setIconSize(34);
-                deleteIcon.setOnMouseClicked(e -> {
-                    showWarningPopup();
-                });
-                deleteIcon.getStyleClass().add("custom-icon");
-                Tooltip tooltipDelete = new Tooltip("Delete file");
-                tooltipDelete.setFont(Font.font(14));
-                Tooltip.install(deleteIcon, tooltipDelete);
-
-                hbox.getChildren().addAll(fileNameLabel, spacer, deleteIcon);
-
-                vbFileItem.getChildren().add(hbox);
-
-                clearGraphButton.setDisable(false);
-                reloadButton.setDisable(false);
+                addFileItem(selectedFile, vbFileItem, clearGraphButton, reloadButton);
             }
 
             showFilesLoadedPopup();
@@ -313,6 +305,38 @@ public class DataView {
         vbox.getChildren().addAll(label1, label2, label3, label4);
 
         return vbox;
+    }
+
+    /* Method to display the new files upload */
+
+    private void addFileItem(File file, VBox vbFileItem, Button clearGraphButton, Button reloadButton) {
+        HBox hbox = new HBox();
+        Label fileNameLabel = new Label(file.getName());
+        fileNameLabel.setFont(Font.font("Arial", 32));
+        fileNameLabel.getStyleClass().add("hand-on-button");
+        fileNameLabel.setOnMouseClicked(e -> {
+            showFileInfoPopup(file);
+        });
+
+        Pane spacer = new Pane();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        FontIcon deleteIcon = new FontIcon(MaterialDesignD.DELETE_OUTLINE);
+        deleteIcon.setIconSize(34);
+        deleteIcon.setOnMouseClicked(e -> {
+            showWarningPopup();
+        });
+        deleteIcon.getStyleClass().add("custom-icon");
+        Tooltip tooltipDelete = new Tooltip("Delete file");
+        tooltipDelete.setFont(Font.font(14));
+        Tooltip.install(deleteIcon, tooltipDelete);
+
+        hbox.getChildren().addAll(fileNameLabel, spacer, deleteIcon);
+
+        vbFileItem.getChildren().add(hbox);
+
+        clearGraphButton.setDisable(false);
+        reloadButton.setDisable(false);
     }
 
     /* Alert Pop-Up */
