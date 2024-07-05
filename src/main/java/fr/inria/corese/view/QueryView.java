@@ -14,6 +14,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.DataFormat;
@@ -28,6 +29,7 @@ import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.materialdesign2.*;
 
 import java.util.Comparator;
+import java.util.Iterator;
 
 public class QueryView {
 
@@ -250,12 +252,16 @@ public class QueryView {
         TabPane tbResult = new TabPane();
         VBox.setVgrow(tbResult, Priority.ALWAYS);
 
+        Tooltip tooltipDrag = new Tooltip("Move me");
+        tooltipDrag.setFont(Font.font(14));
+
         Tab text = new Tab("", createTextResult());
         FontIcon textIcon = new FontIcon(MaterialDesignF.FORMAT_TEXT);
         textIcon.setIconSize(34);
         text.setGraphic(textIcon);
         text.setClosable(false);
         text.getStyleClass().add("query-tab");
+        Tooltip.install(textIcon, tooltipDrag);
 
         Tab table = new Tab("", createTableResult());
         FontIcon tableIcon = new FontIcon(MaterialDesignT.TABLE);
@@ -263,6 +269,7 @@ public class QueryView {
         table.setGraphic(tableIcon);
         table.setClosable(false);
         table.getStyleClass().add("query-tab");
+        Tooltip.install(tableIcon, tooltipDrag);
 
         Tab graph = new Tab("", createGraphResult());
         FontIcon graphIcon = new FontIcon(MaterialDesignG.GRAPH_OUTLINE);
@@ -270,6 +277,7 @@ public class QueryView {
         graph.setGraphic(graphIcon);
         graph.setClosable(false);
         graph.getStyleClass().add("query-tab");
+        Tooltip.install(graphIcon, tooltipDrag);
 
         tbResult.getTabs().addAll(text, table, graph);
 
@@ -294,8 +302,21 @@ public class QueryView {
             if (event.getTransferMode() == TransferMode.MOVE) {
                 splitPane.getItems().remove(tab.getContent());
                 tabPane.getTabs().add(tab);
+                removeEmptyTabPane(splitPane);
             }
         });
+    }
+
+    private void removeEmptyTabPane(SplitPane splitPane) {
+        for (Iterator<Node> iterator = splitPane.getItems().iterator(); iterator.hasNext(); ) {
+            Node node = iterator.next();
+            if (node instanceof TabPane) {
+                TabPane pane = (TabPane) node;
+                if (pane.getTabs().isEmpty()) {
+                    iterator.remove();
+                }
+            }
+        }
     }
 
     private VBox createTextResult() {

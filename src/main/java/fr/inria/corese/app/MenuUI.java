@@ -27,6 +27,9 @@ public class MenuUI {
 //        menuButton.setGraphic(menuIcon);
 
         Button dataButton = new Button("Data");
+        dataButton.setPrefWidth(175);
+        dataButton.setMaxWidth(175);
+        dataButton.setAlignment(Pos.CENTER_LEFT);
         FontIcon dataIcon = new FontIcon(MaterialDesignD.DATABASE);
         dataIcon.setIconSize(34);
         dataButton.setGraphic(dataIcon);
@@ -37,6 +40,9 @@ public class MenuUI {
         setActiveButton(dataButton);
 
         Button rdfEditorButton = new Button("RDF Editor");
+        rdfEditorButton.setPrefWidth(175);
+        rdfEditorButton.setMaxWidth(175);
+        rdfEditorButton.setAlignment(Pos.CENTER_LEFT);
         FontIcon rdfEditorIcon = new FontIcon(MaterialDesignC.CODE_NOT_EQUAL_VARIANT);
         rdfEditorIcon.setIconSize(34);
         rdfEditorButton.setGraphic(rdfEditorIcon);
@@ -46,6 +52,9 @@ public class MenuUI {
         });
 
         Button validationButton = new Button("Validation");
+        validationButton.setPrefWidth(175);
+        validationButton.setMaxWidth(175);
+        validationButton.setAlignment(Pos.CENTER_LEFT);
         FontIcon validationIcon = new FontIcon(MaterialDesignC.CHECK_DECAGRAM);
         validationIcon.setIconSize(34);
         validationButton.setGraphic(validationIcon);
@@ -55,6 +64,9 @@ public class MenuUI {
         });
 
         Button queryButton = new Button("Query");
+        queryButton.setPrefWidth(175);
+        queryButton.setMaxWidth(175);
+        queryButton.setAlignment(Pos.CENTER_LEFT);
         FontIcon queryIcon = new FontIcon(MaterialDesignM.MAGNIFY);
         queryIcon.setIconSize(34);
         queryButton.setGraphic(queryIcon);
@@ -64,6 +76,9 @@ public class MenuUI {
         });
 
         Button settingsButton = new Button("Settings");
+        settingsButton.setPrefWidth(175);
+        settingsButton.setMaxWidth(175);
+        settingsButton.setAlignment(Pos.CENTER_LEFT);
         FontIcon settingsIcon = new FontIcon(MaterialDesignC.COG);
         settingsIcon.setIconSize(34);
         settingsButton.setGraphic(settingsIcon);
