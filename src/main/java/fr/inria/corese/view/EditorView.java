@@ -12,6 +12,8 @@ import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import org.fxmisc.richtext.CodeArea;
+import org.fxmisc.richtext.LineNumberFactory;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignC;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignF;
@@ -256,7 +258,6 @@ public class EditorView {
     private VBox createTabContent() {
 
         VBox tabContent = new VBox();
-//        tabContent.setPadding(new Insets(20,0,0,0));
         VBox.setVgrow(tabContent, Priority.ALWAYS);
         tabContent.setBorder(border);
 
@@ -267,23 +268,31 @@ public class EditorView {
 
         /* Editor section */
 
-        TextArea textArea = new TextArea();
-        textArea.setPadding(new Insets(10));
-        textArea.setFont(Font.font("Arial", 14));
-        HBox.setHgrow(textArea, Priority.ALWAYS);
-        textArea.setFocusTraversable(false);
+//        TextArea textArea = new TextArea();
+//        textArea.setPadding(new Insets(10));
+//        textArea.setFont(Font.font("Arial", 14));
+//        HBox.setHgrow(textArea, Priority.ALWAYS);
+//        textArea.setFocusTraversable(false);
+
+        CodeArea codeArea = new CodeArea();
+        codeArea.setPadding(new Insets(10));
+//        codeArea.setFont(Font.font("Arial", 14));
+        HBox.setHgrow(codeArea, Priority.ALWAYS);
+        codeArea.setFocusTraversable(false);
+        codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
+        codeArea.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 16px;");
 
         GridPane textGrid = new GridPane();
-        textGrid.add(editorModule.createLineNumberArea(textArea), 0, 0);
-        textGrid.add(textArea, 1, 0);
+//        textGrid.add(editorModule.createLineNumberArea(textArea), 0, 0);
+        textGrid.add(codeArea, 1, 0);
         textGrid.setPadding(new Insets(0,10,0,0));
-        GridPane.setHgrow(textArea, Priority.ALWAYS);
-        GridPane.setVgrow(textArea, Priority.ALWAYS);
+        GridPane.setHgrow(codeArea, Priority.ALWAYS);
+        GridPane.setVgrow(codeArea, Priority.ALWAYS);
         HBox.setHgrow(textGrid, Priority.ALWAYS);
 
         /* All the icon button */
 //        VBox iconsBox = createIconsBox(primaryStage, textArea);
-        VBox iconsBox = editorModule.createIconsBox(primaryStage, textArea, tabPane);
+        VBox iconsBox = editorModule.createIconsBox(primaryStage, codeArea, tabPane);
 
 
         hbox.getChildren().addAll(textGrid, iconsBox);
@@ -298,10 +307,10 @@ public class EditorView {
         /* The position of the cursor */
         Text positionText = new Text();
 
-        textArea.caretPositionProperty().addListener((observable, oldValue, newValue) -> {
+        codeArea.caretPositionProperty().addListener((observable, oldValue, newValue) -> {
             int caretPosition = newValue.intValue();
-            int lineNumber = textArea.getText().substring(0, caretPosition).split("\n", -1).length;
-            int columnNumber = caretPosition - textArea.getText().lastIndexOf('\n', caretPosition - 1);
+            int lineNumber = codeArea.getText().substring(0, caretPosition).split("\n", -1).length;
+            int columnNumber = caretPosition - codeArea.getText().lastIndexOf('\n', caretPosition - 1);
             positionText.setText("Ln " + lineNumber + ", Col " + columnNumber);
         });
 
@@ -436,8 +445,12 @@ public class EditorView {
             tabList.add(newTab);
             newTab.getStyleClass().add("MyTab");
 
-            TextArea textArea = (TextArea) ((GridPane) ((HBox) ((VBox) newTab.getContent()).getChildren().get(0)).getChildren().get(0)).getChildren().get(1);
-            textArea.setText(content);
+            VBox tabContent = (VBox) newTab.getContent();
+            HBox hbox = (HBox) tabContent.getChildren().get(0);
+            GridPane textGrid = (GridPane) hbox.getChildren().get(0);
+            CodeArea codeArea = (CodeArea) textGrid.getChildren().get(0);
+
+            codeArea.replaceText(content);
 
             tabPane.getTabs().add(tabList.size() - 1, newTab);
             tabPane.getSelectionModel().select(newTab);
@@ -445,5 +458,6 @@ public class EditorView {
             e.printStackTrace();
         }
     }
+
 
 }

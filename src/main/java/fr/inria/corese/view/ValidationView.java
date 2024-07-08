@@ -10,6 +10,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import org.fxmisc.richtext.CodeArea;
+import org.fxmisc.richtext.LineNumberFactory;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.javafx.Icon;
 import org.kordamp.ikonli.materialdesign2.*;
@@ -125,12 +127,20 @@ public class ValidationView {
 
         StackPane stackPane = new StackPane();
 
-        TextArea textArea = new TextArea();
-        textArea.setPadding(new Insets(10));
-        textArea.setFont(Font.font("Arial", 14));
-        HBox.setHgrow(textArea, Priority.ALWAYS);
-        textArea.setFocusTraversable(false);
-        textArea.setMaxHeight(600);
+//        TextArea textArea = new TextArea();
+//        textArea.setPadding(new Insets(10));
+//        textArea.setFont(Font.font("Arial", 14));
+//        HBox.setHgrow(textArea, Priority.ALWAYS);
+//        textArea.setFocusTraversable(false);
+//        textArea.setMaxHeight(600);
+
+        CodeArea codeArea = new CodeArea();
+        codeArea.setPadding(new Insets(10));
+//        codeArea.setFont(Font.font("Arial", 14));
+        HBox.setHgrow(codeArea, Priority.ALWAYS);
+        codeArea.setFocusTraversable(false);
+        codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
+        codeArea.setMaxHeight(600);
 
         Button runButton = new Button("Run");
         FontIcon runIcon = new FontIcon(MaterialDesignP.PLAY_OUTLINE);
@@ -144,14 +154,14 @@ public class ValidationView {
         StackPane.setAlignment(runButton, Pos.BOTTOM_RIGHT);
         StackPane.setMargin(runButton, new Insets(0, 25, 25, 0));
 
-        stackPane.getChildren().addAll(textArea, runButton);
+        stackPane.getChildren().addAll(codeArea, runButton);
 
         VBox vbResult = createResultContent();
         VBox.setVgrow(vbResult, Priority.ALWAYS);
         vbResult.setPadding(new Insets(10, 0, 0, 0));
 
         GridPane textGrid = new GridPane();
-        textGrid.add(editorModule.createLineNumberArea(textArea), 0, 0);
+//        textGrid.add(editorModule.createLineNumberArea(textArea), 0, 0);
         textGrid.add(stackPane, 1, 0);
         textGrid.add(vbResult, 1, 1);
         textGrid.setPadding(new Insets(0,10,0,0));
@@ -168,7 +178,7 @@ public class ValidationView {
 
         /* All the icon button */
 //        VBox iconsBox = createIconsBox(primaryStage, textArea);
-        VBox iconsBox = editorModule.createIconsBox(primaryStage, textArea, tabPane);
+        VBox iconsBox = editorModule.createIconsBox(primaryStage, new CodeArea(), tabPane);
 
         hbox.getChildren().addAll(textGrid, iconsBox);
 
@@ -182,10 +192,10 @@ public class ValidationView {
         /* The position of the cursor */
         Text positionText = new Text();
 
-        textArea.caretPositionProperty().addListener((observable, oldValue, newValue) -> {
+        codeArea.caretPositionProperty().addListener((observable, oldValue, newValue) -> {
             int caretPosition = newValue.intValue();
-            int lineNumber = textArea.getText().substring(0, caretPosition).split("\n", -1).length;
-            int columnNumber = caretPosition - textArea.getText().lastIndexOf('\n', caretPosition - 1);
+            int lineNumber = codeArea.getText().substring(0, caretPosition).split("\n", -1).length;
+            int columnNumber = caretPosition - codeArea.getText().lastIndexOf('\n', caretPosition - 1);
             positionText.setText("Ln " + lineNumber + ", Col " + columnNumber);
         });
 

@@ -7,12 +7,18 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.fxmisc.richtext.CodeArea;
+import org.fxmisc.richtext.StyleClassedTextArea;
+import org.fxmisc.richtext.model.StyleSpans;
+import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.materialdesign2.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collection;
+import java.util.Collections;
 
 public class EditorModule {
 
@@ -26,28 +32,28 @@ public class EditorModule {
      * @param textArea the text area for which to create line numbers.
      * @return a {@link VBox} containing the line numbers.
      */
-    public VBox createLineNumberArea(TextArea textArea) {
-        VBox lineNumberArea = new VBox();
-        lineNumberArea.setAlignment(Pos.TOP_RIGHT);
-        lineNumberArea.setPadding(new Insets(15, 5, 0, 5));
-
-        textArea.scrollTopProperty().addListener((observable, oldValue, newValue) -> {
-            lineNumberArea.setTranslateY(-newValue.doubleValue());
-        });
-
-        textArea.textProperty().addListener((observable, oldValue, newValue) -> {
-            int lineCount = textArea.getText().split("\n", -1).length;
-            lineNumberArea.getChildren().clear();
-            for (int i = 1; i <= lineCount; i++) {
-                Label lineLabel = new Label(String.valueOf(i));
-                lineLabel.setFont(Font.font("Arial", 14));
-                lineLabel.setPadding(new Insets(0, 0, 1.1995, 0));
-                lineNumberArea.getChildren().add(lineLabel);
-            }
-        });
-
-        return lineNumberArea;
-    }
+//    public VBox createLineNumberArea(TextArea textArea) {
+//        VBox lineNumberArea = new VBox();
+//        lineNumberArea.setAlignment(Pos.TOP_RIGHT);
+//        lineNumberArea.setPadding(new Insets(15, 5, 0, 5));
+//
+//        textArea.scrollTopProperty().addListener((observable, oldValue, newValue) -> {
+//            lineNumberArea.setTranslateY(-newValue.doubleValue());
+//        });
+//
+//        textArea.textProperty().addListener((observable, oldValue, newValue) -> {
+//            int lineCount = textArea.getText().split("\n", -1).length;
+//            lineNumberArea.getChildren().clear();
+//            for (int i = 1; i <= lineCount; i++) {
+//                Label lineLabel = new Label(String.valueOf(i));
+//                lineLabel.setFont(Font.font("Arial", 14));
+//                lineLabel.setPadding(new Insets(0, 0, 1.1995, 0));
+//                lineNumberArea.getChildren().add(lineLabel);
+//            }
+//        });
+//
+//        return lineNumberArea;
+//    }
 
     /**
      * Creates a {@link VBox} containing icons for file operations.
@@ -55,7 +61,7 @@ public class EditorModule {
      *
      *
      * @param primaryStage the primary stage of the application.
-     * @param textArea the text area associated with the icons.
+     * @param codeArea the text area associated with the icons.
      * @param tabPane the pane in which the icons are contained.
      * @return a {@link VBox} containing the file operation icons.
      *
@@ -64,7 +70,7 @@ public class EditorModule {
      * @see Tooltip
      * @see TextArea
      */
-    public VBox createIconsBox(Stage primaryStage, TextArea textArea, TabPane tabPane) {
+    public VBox createIconsBox(Stage primaryStage, CodeArea codeArea, TabPane tabPane) {
 
         /* All the icon button */
 
@@ -74,7 +80,7 @@ public class EditorModule {
 
         FontIcon saveIcon = new FontIcon(MaterialDesignC.CONTENT_SAVE_ALL_OUTLINE);
         saveIcon.setIconSize(34);
-        saveIcon.setOnMouseClicked(event -> saveTextToFile(primaryStage, textArea, tabPane.getSelectionModel().getSelectedItem()));
+        saveIcon.setOnMouseClicked(event -> saveTextToFile(primaryStage, codeArea, tabPane.getSelectionModel().getSelectedItem()));
         saveIcon.getStyleClass().add("custom-icon");
         Tooltip tooltipSave = new Tooltip("Save files");
         tooltipSave.setFont(Font.font(14));
@@ -82,7 +88,7 @@ public class EditorModule {
 
         FontIcon openIcon = new FontIcon(MaterialDesignF.FOLDER_OPEN);
         openIcon.setIconSize(34);
-        openIcon.setOnMouseClicked(event -> loadTextFromFile(primaryStage, textArea, tabPane.getSelectionModel().getSelectedItem()));
+        openIcon.setOnMouseClicked(event -> loadTextFromFile(primaryStage, codeArea, tabPane.getSelectionModel().getSelectedItem()));
         openIcon.getStyleClass().add("custom-icon");
         Tooltip tooltipOpen = new Tooltip("Open files");
         tooltipOpen.setFont(Font.font(14));
@@ -130,27 +136,27 @@ public class EditorModule {
     /* Method for actions */
 
     /**
-     * Opens a {@link FileChooser} dialog for the user to select a location to save the text content from the provided {@link TextArea}.
+     * Opens a {@link FileChooser} dialog for the user to select a location to save the text content from the provided {@link CodeArea}.
      * <p>
-     * If the user selects a file location, the content of the {@link TextArea} is saved to that {@link File}, and the tab's text is set to the file name.
+     * If the user selects a file location, the content of the {@link CodeArea} is saved to that {@link File}, and the tab's text is set to the file name.
      * </p>
      *
      * @param stage the primary stage of the application.
-     * @param textArea the {@link TextArea} containing the text content to be saved.
+     * @param codeArea the {@link CodeArea} containing the text content to be saved.
      * @param tab the {@link Tab} associated with the text content being saved.
      *
      * @see FileChooser
-     * @see TextArea
+     * @see CodeArea
      * @see File
      * @see Tab
      */
-    public void saveTextToFile(Stage stage, TextArea textArea, Tab tab) {
+    public void saveTextToFile(Stage stage, CodeArea codeArea, Tab tab) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Text");
         File file = fileChooser.showSaveDialog(stage);
         if (file != null) {
             try {
-                Files.write(file.toPath(), textArea.getText().getBytes());
+                Files.write(file.toPath(), codeArea.getText().getBytes());
                 tab.setText(file.getName());
             } catch (IOException e) {
                 e.printStackTrace();
@@ -161,26 +167,26 @@ public class EditorModule {
     /**
      * Opens a {@link FileChooser} dialog for the user to select a {@link File} to open.
      * <p>
-     * If the user selects a {@link File}, its content is read and loaded into the {@link TextArea}, and the tab's text is set to the file name.
+     * If the user selects a {@link File}, its content is read and loaded into the {@link CodeArea}, and the tab's text is set to the file name.
      * </p>
      *
      * @param stage the primary stage of the application.
-     * @param textArea the {@link TextArea} where the content of the selected file will be loaded.
+     * @param codeArea the {@link CodeArea} where the content of the selected file will be loaded.
      * @param tab the {@link Tab} associated with the text content being loaded.
      *
      * @see FileChooser
      * @see File
-     * @see TextArea
+     * @see CodeArea
      * @see Tab
      */
-    public void loadTextFromFile(Stage stage, TextArea textArea, Tab tab) {
+    public void loadTextFromFile(Stage stage, CodeArea codeArea, Tab tab) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open File");
         File file = fileChooser.showOpenDialog(stage);
         if (file != null) {
             try {
                 String content = new String(Files.readAllBytes(file.toPath()));
-                textArea.setText(content);
+                codeArea.replaceText(content);
                 tab.setText(file.getName());
             } catch (IOException e) {
                 e.printStackTrace();

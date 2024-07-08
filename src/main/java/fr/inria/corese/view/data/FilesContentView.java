@@ -1,5 +1,6 @@
 package fr.inria.corese.view.data;
 
+import fr.inria.corese.controller.DataController;
 import fr.inria.corese.view.DataView;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -26,7 +27,9 @@ public class FilesContentView {
     public VBox vbFileItem;
     public Button clearGraphButton;
     public Button reloadButton;
-    private List<File> currentFiles = new ArrayList<>(); // Liste des fichiers actuellement affichés
+    private List<File> currentFiles = new ArrayList<>();
+    private DataController dataController = new DataController();
+
 
     public VBox createFilesContent(DataView dataView, LogsContentView logsContentView) {
         VBox vbox = new VBox();
@@ -52,6 +55,7 @@ public class FilesContentView {
                 vbFileItem.getChildren().clear();
                 clearGraphButton.setDisable(true);
                 reloadButton.setDisable(true);
+                dataController.clearGraph(); // controller action
             });
         });
 
@@ -101,6 +105,20 @@ public class FilesContentView {
     /* Method to display the new files upload */
 
     public void addFileItem(File file) {
+        String[] allowedExtensions = { ".rdf", ".ttl", ".trig", ".jsonld", ".nt", ".nq", ".html" };
+
+        boolean isAllowed = false;
+        for (String ext : allowedExtensions) {
+            if (file.getName().toLowerCase().endsWith(ext)) {
+                isAllowed = true;
+                break;
+            }
+        }
+
+        if (!isAllowed) {
+            return;
+        }
+
         try {
             BasicFileAttributes attrs = Files.readAttributes(file.toPath(), BasicFileAttributes.class);
             String createdTime = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(new Date(attrs.creationTime().toMillis()));
@@ -149,6 +167,11 @@ public class FilesContentView {
             hbox.getChildren().addAll(lblFileName, lblCreatedTime, lblModifiedTime, spacer, deleteIcon);
 
             vbFileItem.getChildren().add(hbox);
+
+            dataController.loadGraphFromFile(file); // controller action
+            String str = String.valueOf(dataController.getGraph());
+            System.out.println(str);
+            System.out.println(dataController.getGraph().display());
 
             clearGraphButton.setDisable(false);
             reloadButton.setDisable(false);
@@ -230,8 +253,10 @@ public class FilesContentView {
 
     public void reloadFiles() {
         vbFileItem.getChildren().clear();
+        dataController.clearGraph(); // controller action
         for (File file : currentFiles) {
             addFileItem(file);
+            dataController.loadGraphFromFile(file); // controller action
         }
         updateButtonState();
     }
