@@ -38,7 +38,7 @@ public class DataView {
 
     /* First display */
 
-    public VBox createData() {
+    public VBox createData()  {
         vbCenter = new VBox();
         vbCenter.setPadding(new Insets(20));
 
