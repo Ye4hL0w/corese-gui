@@ -11,26 +11,35 @@ import fr.inria.corese.controller.QueryController;
 import io.github.palexdev.materialfx.controls.MFXTableColumn;
 import io.github.palexdev.materialfx.controls.MFXTableView;
 import io.github.palexdev.materialfx.controls.cell.MFXTableRowCell;
+import io.github.palexdev.mfxcore.utils.fx.SwingFXUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.Scene;
+import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
-import javafx.scene.input.DataFormat;
-import javafx.scene.input.Dragboard;
+import javafx.scene.image.WritableImage;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
+import javafx.stage.FileChooser;
+import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.materialdesign2.*;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Comparator;
 import java.util.Iterator;
 
@@ -41,6 +50,10 @@ public class QueryView {
     private Stage primaryStage;
     private Border border;
     private TabPane tabPane;
+
+    private Label textData;
+    private MFXTableView<MaterialFx.Person> mfxTableView;
+    private SmartGraphPanel<String, String> graphView;
 
     private ObservableList<Tab> tabList = FXCollections.observableArrayList();
 
@@ -129,7 +142,6 @@ public class QueryView {
 
         return hbCenter;
     }
-
 
     private VBox createTabContent() {
 
@@ -349,7 +361,7 @@ public class QueryView {
         FontIcon exportIcon = new FontIcon(MaterialDesignA.APPLICATION_EXPORT);
         exportIcon.setIconSize(34);
         exportIcon.setOnMouseClicked(event -> {
-
+            exportText();
         });
         exportIcon.getStyleClass().add("custom-icon");
         Tooltip exportTooltip = new Tooltip("Export file");
@@ -358,8 +370,8 @@ public class QueryView {
 
         hBox.getChildren().addAll(cbTypeOfFile, spacer, exportIcon);
 
-        Label l  = new Label("Text");
-        vbox.getChildren().addAll(hBox, l);
+        textData  = new Label("Text");
+        vbox.getChildren().addAll(hBox, textData);
 
         return vbox;
     }
@@ -376,7 +388,7 @@ public class QueryView {
         FontIcon exportIcon = new FontIcon(MaterialDesignA.APPLICATION_EXPORT);
         exportIcon.setIconSize(34);
         exportIcon.setOnMouseClicked(event -> {
-
+            exportTable();
         });
         exportIcon.getStyleClass().add("custom-icon");
         Tooltip exportTooltip = new Tooltip("Export file");
@@ -387,7 +399,7 @@ public class QueryView {
         StackPane.setAlignment(exportIcon, Pos.TOP_RIGHT);
 
         // TABLE
-        MFXTableView<MaterialFx.Person> mfxTableView = new MFXTableView<>();
+        mfxTableView = new MFXTableView<>();
 
         MFXTableColumn<MaterialFx.Person> firstNameColumn = new MFXTableColumn<>("First Name", true,
                 Comparator.comparing(MaterialFx.Person::getFirstName));
@@ -428,20 +440,63 @@ public class QueryView {
         vbox.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
 
         StackPane stackPane = new StackPane();
+        stackPane.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
         VBox.setVgrow(stackPane, Priority.ALWAYS);
 
         FontIcon exportIcon = new FontIcon(MaterialDesignA.APPLICATION_EXPORT);
         exportIcon.setIconSize(34);
         exportIcon.setOnMouseClicked(event -> {
-
+            exportGraphAsImage();
         });
         exportIcon.getStyleClass().add("custom-icon");
         Tooltip exportTooltip = new Tooltip("Export file");
         exportTooltip.setFont(Font.font(14));
         Tooltip.install(exportIcon, exportTooltip);
 
-
         StackPane.setAlignment(exportIcon, Pos.TOP_RIGHT);
+
+        VBox vbDimension = new VBox();
+        vbDimension.setPadding(new Insets(2));
+        vbDimension.setMaxSize(Region.USE_PREF_SIZE, Region.USE_PREF_SIZE);
+        vbDimension.setBackground(new Background(new BackgroundFill(Color.WHITE, CornerRadii.EMPTY, Insets.EMPTY)));
+        vbDimension.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(2))));
+
+        FontIcon zoomInIcon = new FontIcon(MaterialDesignM.MAGNIFY_PLUS_OUTLINE);
+        zoomInIcon.setIconSize(34);
+        zoomInIcon.setOnMouseClicked(event -> {
+            graphView.setScaleX(graphView.getScaleX() * 1.1);
+            graphView.setScaleY(graphView.getScaleY() * 1.1);
+        });
+        zoomInIcon.getStyleClass().add("custom-icon");
+        Tooltip zoomInTooltip = new Tooltip("Zoom In");
+        zoomInTooltip.setFont(Font.font(14));
+        Tooltip.install(zoomInIcon, zoomInTooltip);
+
+        FontIcon zoomOutIcon = new FontIcon(MaterialDesignM.MAGNIFY_MINUS_OUTLINE);
+        zoomOutIcon.setIconSize(34);
+        zoomOutIcon.setOnMouseClicked(event -> {
+            graphView.setScaleX(graphView.getScaleX() / 1.1);
+            graphView.setScaleY(graphView.getScaleY() / 1.1);
+        });
+        zoomOutIcon.getStyleClass().add("custom-icon");
+        Tooltip zoomOutTooltip = new Tooltip("Zoom Out");
+        zoomOutTooltip.setFont(Font.font(14));
+        Tooltip.install(zoomOutIcon, zoomOutTooltip);
+
+        FontIcon recenterIcon = new FontIcon(MaterialDesignC.CROP_FREE);
+        recenterIcon.setIconSize(34);
+        recenterIcon.setOnMouseClicked(event -> {
+            graphView.setScaleX(1);
+            graphView.setScaleY(1);
+        });
+        recenterIcon.getStyleClass().add("custom-icon");
+        Tooltip recenterTooltip = new Tooltip("Recenter");
+        recenterTooltip.setFont(Font.font(14));
+        Tooltip.install(recenterIcon, recenterTooltip);
+
+        vbDimension.getChildren().addAll(zoomInIcon, zoomOutIcon, recenterIcon);
+
+        StackPane.setAlignment(vbDimension, Pos.BOTTOM_RIGHT);
 
         // GRAPH
         Digraph<String, String> graph = new DigraphEdgeList<>();
@@ -455,15 +510,94 @@ public class QueryView {
 
 
         SmartPlacementStrategy strategy = new SmartCircularSortedPlacementStrategy();
-        SmartGraphPanel<String, String> graphView = new SmartGraphPanel<>(graph, strategy);
+        graphView = new SmartGraphPanel<>(graph, strategy);
 
         graphView.getStylableVertex("ex:Alice").setStyleClass("myVertex");
 
-
-        stackPane.getChildren().addAll(graphView, exportIcon);
+        Group graphGroup = new Group(graphView);
+        stackPane.getChildren().addAll(graphGroup, exportIcon, vbDimension);
         vbox.getChildren().add(stackPane);
 
         graphView.setAutomaticLayout(true);
         return vbox;
+    }
+
+    /* Export methods */
+
+    private void exportText() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Text File");
+
+        fileChooser.getExtensionFilters().add(new ExtensionFilter("Text Files", "*.txt"));
+
+        File file = fileChooser.showSaveDialog(null);
+
+        if (file != null) {
+            if (!file.getName().endsWith(".txt")) {
+                file = new File(file.getAbsolutePath() + ".txt");
+            }
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                writer.write(String.valueOf(textData));
+            } catch (IOException e) {
+                showAlert("Error", "An error occurred while saving the file: " + e.getMessage());
+            }        }
+    }
+
+    private void exportGraphAsImage() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Image");
+        fileChooser.getExtensionFilters().addAll(
+                new ExtensionFilter("PNG Images", "*.png")
+//                new ExtensionFilter("JPG Images", "*.jpg"),
+//                new ExtensionFilter("All Images", "*.*")
+        );
+
+        File file = fileChooser.showSaveDialog(null);
+
+        if (file != null) {
+            String extension = fileChooser.getSelectedExtensionFilter().getExtensions().get(0).replace("*.", "").toLowerCase();
+            WritableImage writableImage = new WritableImage((int) graphView.getWidth(), (int) graphView.getHeight());
+            graphView.snapshot(new SnapshotParameters(), writableImage);
+            BufferedImage bufferedImage = SwingFXUtils.fromFXImage(writableImage, null);
+            try {
+                ImageIO.write(bufferedImage, extension, file);
+            } catch (IOException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "An error occurred while saving the file: " + e.getMessage(), ButtonType.OK);
+                alert.showAndWait();
+            }
+        }
+    }
+
+    private void exportTable() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save CSV File");
+        fileChooser.getExtensionFilters().add(
+                new ExtensionFilter("CSV Files", "*.csv"));
+
+        File file = fileChooser.showSaveDialog(null);
+        if (file != null) {
+            if (!file.getName().endsWith(".csv")) {
+                file = new File(file.getAbsolutePath() + ".csv");
+            }
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                writer.write("First Name,Last Name,Age");
+                writer.newLine();
+                for (MaterialFx.Person person : mfxTableView.getItems()) {
+                    writer.write(String.format("%s,%s,%d",
+                            person.getFirstName(),
+                            person.getLastName(),
+                            person.getAge()));
+                    writer.newLine();
+                }
+            } catch (IOException e) {
+                showAlert("Error", "An error occurred while saving the CSV file: " + e.getMessage());
+            }
+        }
+    }
+
+    private void showAlert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
+        alert.setTitle(title);
+        alert.showAndWait();
     }
 }

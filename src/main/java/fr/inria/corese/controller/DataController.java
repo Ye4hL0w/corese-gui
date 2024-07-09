@@ -33,19 +33,23 @@ public class DataController {
     /* Stats */
 
     public int getNumberOfTriplets() {
-        return 41226;
+        // TODO : Implements the logic to recover the number of triplets.
+        return 0;
     }
 
     public int getNumberOfGraphs() {
-        return 1;
+        // TODO : Implements the logic to recover the number of graph.
+        return 0;
     }
 
     public int getNumberOfSemanticElements() {
-        return 12;
+        // TODO : Implements the logic to recover the number of the semantic elements.
+        return 0;
     }
 
     public int getNumberOfRules() {
-        return 6;
+        // TODO : Implements the logic to recover the number of rules.
+        return 0;
     }
 
 }
