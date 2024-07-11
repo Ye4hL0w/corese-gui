@@ -14,15 +14,23 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
+import org.fxmisc.richtext.model.StyleSpans;
+import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignC;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignF;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignP;
+import org.reactfx.Subscription;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.time.Duration;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * {@link EditorView} is a JavaFX component with the role of view in the code architecture.
@@ -50,6 +58,22 @@ public class EditorView {
     private ObservableList<Tab> tabList = FXCollections.observableArrayList();
 
     private EditorModule editorModule = new EditorModule();
+
+    /* Patterns for syntax highlighting */
+
+    private static final String PREFIX_PATTERN = "(?i)PREFIX\\s+[^\\s]*\\s*:";
+    private static final String URL_PATTERN = "<[^>]+>";
+    private static final String KEYWORD_PATTERN = "(rdf|rdfs|ex|foaf):[^\\s;,.]+";
+    private static final String LITERAL_PATTERN = "\"[^\"\\\\]*(\\\\.[^\"\\\\]*)*\"";
+    private static final String COMMENT_PATTERN = "#[^\n]*";
+
+    private static final Pattern PATTERN = Pattern.compile(
+            "(?<PREFIX>" + PREFIX_PATTERN + ")"
+                    + "|(?<URL>" + URL_PATTERN + ")"
+                    + "|(?<KEYWORD>" + KEYWORD_PATTERN + ")"
+                    + "|(?<LITERAL>" + LITERAL_PATTERN + ")"
+                    + "|(?<COMMENT>" + COMMENT_PATTERN + ")"
+    );
 
     /**
      * Constructor for {@link EditorView}.
@@ -268,19 +292,17 @@ public class EditorView {
 
         /* Editor section */
 
-//        TextArea textArea = new TextArea();
-//        textArea.setPadding(new Insets(10));
-//        textArea.setFont(Font.font("Arial", 14));
-//        HBox.setHgrow(textArea, Priority.ALWAYS);
-//        textArea.setFocusTraversable(false);
-
         CodeArea codeArea = new CodeArea();
         codeArea.setPadding(new Insets(10));
-//        codeArea.setFont(Font.font("Arial", 14));
         HBox.setHgrow(codeArea, Priority.ALWAYS);
         codeArea.setFocusTraversable(false);
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
-        codeArea.setStyle("-fx-font-family: 'Arial'; -fx-font-size: 16px;");
+        codeArea.setStyle("-fx-font-size: 16px;");
+
+        codeArea.richChanges()
+                .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
+                .successionEnds(Duration.ofMillis(500))
+                .subscribe(ignore -> codeArea.setStyleSpans(0, computeHighlighting(codeArea.getText())));
 
         GridPane textGrid = new GridPane();
 //        textGrid.add(editorModule.createLineNumberArea(textArea), 0, 0);
@@ -459,5 +481,26 @@ public class EditorView {
         }
     }
 
+    /* Method for syntax highlighting */
+
+    private StyleSpans<Collection<String>> computeHighlighting(String text) {
+        Matcher matcher = PATTERN.matcher(text);
+        int lastKwEnd = 0;
+        StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+        while (matcher.find()) {
+            String styleClass =
+                    matcher.group("PREFIX") != null ? "prefix" :
+                            matcher.group("URL") != null ? "url" :
+                                    matcher.group("KEYWORD") != null ? "keyword" :
+                                            matcher.group("LITERAL") != null ? "literal" :
+                                                    matcher.group("COMMENT") != null ? "comment" :
+                                                            null; /* never happens */ assert styleClass != null;
+            spansBuilder.add(Collections.emptyList(), matcher.start() - lastKwEnd);
+            spansBuilder.add(Collections.singleton(styleClass), matcher.end() - matcher.start());
+            lastKwEnd = matcher.end();
+        }
+        spansBuilder.add(Collections.emptyList(), text.length() - lastKwEnd);
+        return spansBuilder.create();
+    }
 
 }

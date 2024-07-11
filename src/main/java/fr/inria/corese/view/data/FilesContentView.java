@@ -24,7 +24,7 @@ import java.util.Date;
 import java.util.List;
 
 public class FilesContentView {
-    public VBox vbFileItem;
+    public VBox vbFileItem = new VBox();
     public Button clearGraphButton;
     public Button reloadButton;
     private List<File> currentFiles = new ArrayList<>();
@@ -269,5 +269,9 @@ public class FilesContentView {
             clearGraphButton.setDisable(false);
             reloadButton.setDisable(false);
         }
+    }
+
+    public List<File> getFiles() {
+        return currentFiles;
     }
 }

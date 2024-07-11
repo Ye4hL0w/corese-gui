@@ -9,6 +9,7 @@ import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
@@ -19,12 +20,15 @@ import org.kordamp.ikonli.materialdesign2.MaterialDesignC;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignF;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Optional;
 
 public class DataView {
 
     public VBox vbCenter;
-    public Button clearGraphButton;
-    public Button reloadButton;
 
     private FilesContentView filesContentView;
     private RdfContentView rdfContentView;
@@ -91,7 +95,21 @@ public class DataView {
         saveAsButton.setGraphic(saveIcon);
         saveAsButton.getStyleClass().add("main-button");
         saveAsButton.setOnAction(event -> {
+            DirectoryChooser directoryChooser = new DirectoryChooser();
+            directoryChooser.setTitle("Select Directory to Save Files");
 
+            File selectedDirectory = directoryChooser.showDialog(null);
+            if (selectedDirectory != null && selectedDirectory.isDirectory()) {
+                try {
+                    for (File file : filesContentView.getFiles()) {
+                        Path destination = selectedDirectory.toPath().resolve(file.getName());
+                        Files.copy(file.toPath(), destination, StandardCopyOption.REPLACE_EXISTING);
+                    }
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         });
 
         hbButton.getChildren().addAll(openProjectButton, saveAsButton);

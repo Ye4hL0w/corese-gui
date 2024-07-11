@@ -29,19 +29,24 @@ import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
+import javafx.stage.Window;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
+import org.fxmisc.richtext.model.StyleSpans;
+import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.materialdesign2.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.time.Duration;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class QueryView {
 
@@ -58,6 +63,30 @@ public class QueryView {
     private ObservableList<Tab> tabList = FXCollections.observableArrayList();
 
     private QueryController queryController;
+
+    /* Patterns for syntax highlighting */
+
+    private static final String PREFIX_PATTERN = "(?i)PREFIX\\s+[\\w:]+\\s*";
+    private static final String URL_PATTERN = "<[^>]+>";
+    private static final String IRI_PATTERN = "(?:[\\w:]+\\s*)?\\<[^>]+\\>";
+    private static final String LITERAL_PATTERN = "\"(?:[^\"\\\\]|\\\\.)*\"";
+    private static final String COMMENT_PATTERN = "#.*";
+    private static final String VARIABLE_PATTERN = "(\\?\\w+|\\$\\w+)";
+
+    private static final String SPARQL_KEYWORD_PATTERN = "(?i)\\b(SELECT|WHERE|FILTER|OPTIONAL|UNION|GROUP\\s+BY|ORDER\\s+BY|LIMIT|OFFSET|DESCRIBE|CONSTRUCT|ASK)\\b";
+    private static final String SPARQL_FUNCTION_PATTERN = "(?i)\\b(STR|LANG|LANGMATCHES|DATATYPE|BOUND|IRI|URI|BNODE|RAND|ABS|CEIL|FLOOR|ROUND|CONCAT|SUBSTR|STRLEN|UCASE|LCASE|ENCODE_FOR_URI|REPLACE|EXISTS|REGEX)\\b";
+
+    // Combined SPARQL pattern
+    private static final Pattern SPARQL_PATTERN = Pattern.compile(
+            "(?<KEYWORD>" + SPARQL_KEYWORD_PATTERN + ")" +
+                    "|(?<FUNCTION>" + SPARQL_FUNCTION_PATTERN + ")" +
+                    "|(?<VARIABLE>" + VARIABLE_PATTERN + ")" +
+                    "|(?<URL>" + URL_PATTERN + ")" +
+                    "|(?<IRI>" + IRI_PATTERN + ")" +
+                    "|(?<LITERAL>" + LITERAL_PATTERN + ")" +
+                    "|(?<COMMENT>" + COMMENT_PATTERN + ")" +
+                    "|(?<PREFIX>" + PREFIX_PATTERN + ")"
+    );
 
     public VBox getView() {
         VBox query = createQuery();
@@ -158,25 +187,24 @@ public class QueryView {
 
         StackPane stackPane = new StackPane();
 
-//        TextArea textArea = new TextArea();
-//        textArea.setPadding(new Insets(10));
-//        textArea.setFont(Font.font("Arial", 14));
-//        HBox.setHgrow(textArea, Priority.ALWAYS);
-//        textArea.setFocusTraversable(false);
-
         CodeArea codeArea = new CodeArea();
         codeArea.setPadding(new Insets(10));
-//        codeArea.setFont(Font.font("Arial", 14));
+        codeArea.setStyle("-fx-font-size: 16px;");
         HBox.setHgrow(codeArea, Priority.ALWAYS);
         codeArea.setFocusTraversable(false);
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
+
+        codeArea.richChanges()
+                .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
+                .successionEnds(Duration.ofMillis(500))
+                .subscribe(ignore -> codeArea.setStyleSpans(0, computeHighlighting(codeArea.getText())));
 
         /* Import icon */
 
         FontIcon importIcon = new FontIcon(MaterialDesignA.APPLICATION_IMPORT);
         importIcon.setIconSize(34);
         importIcon.setOnMouseClicked(event -> {
-
+            importFile(codeArea, tabContent.getScene().getWindow());
         });
         importIcon.getStyleClass().add("custom-icon");
         Tooltip importTooltip = new Tooltip("Import file");
@@ -191,7 +219,7 @@ public class QueryView {
         FontIcon exportIcon = new FontIcon(MaterialDesignA.APPLICATION_EXPORT);
         exportIcon.setIconSize(34);
         exportIcon.setOnMouseClicked(event -> {
-
+            exportFile(codeArea, tabContent.getScene().getWindow());
         });
         exportIcon.getStyleClass().add("custom-icon");
         Tooltip exportTooltip = new Tooltip("Export file");
@@ -237,9 +265,6 @@ public class QueryView {
         RowConstraints row2 = new RowConstraints();
         row2.setPercentHeight(66.67);
         textGrid.getRowConstraints().addAll(row1, row2);
-
-        /* All the icon button */
-//        VBox iconsBox = editorModule.createIconsBox(primaryStage, textArea, tabPane);
 
         hbox.getChildren().addAll(textGrid);
 
@@ -395,22 +420,27 @@ public class QueryView {
         exportTooltip.setFont(Font.font(14));
         Tooltip.install(exportIcon, exportTooltip);
 
-
         StackPane.setAlignment(exportIcon, Pos.TOP_RIGHT);
 
         // TABLE
         mfxTableView = new MFXTableView<>();
+        mfxTableView.setPrefWidth(600);
+        mfxTableView.setPrefHeight(450);
+        mfxTableView.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(1))));
 
         MFXTableColumn<MaterialFx.Person> firstNameColumn = new MFXTableColumn<>("First Name", true,
                 Comparator.comparing(MaterialFx.Person::getFirstName));
         firstNameColumn.setRowCellFactory(person -> new MFXTableRowCell<>(MaterialFx.Person::getFirstName));
+        firstNameColumn.setFont(new Font(16));
 
         MFXTableColumn<MaterialFx.Person> lastNameColumn = new MFXTableColumn<>("Last Name", true,
                 Comparator.comparing(MaterialFx.Person::getLastName));
         lastNameColumn.setRowCellFactory(person -> new MFXTableRowCell<>(MaterialFx.Person::getLastName));
+        lastNameColumn.setFont(new Font(16));
 
         MFXTableColumn<MaterialFx.Person> ageColumn = new MFXTableColumn<>("Age", true, Comparator.comparingInt(MaterialFx.Person::getAge));
         ageColumn.setRowCellFactory(person -> new MFXTableRowCell<>(p -> String.valueOf(p.getAge())));
+        ageColumn.setFont(new Font(16));
 
         mfxTableView.getTableColumns().addAll(firstNameColumn, lastNameColumn, ageColumn);
 
@@ -425,6 +455,12 @@ public class QueryView {
                 new MaterialFx.Person("Nox", "Pitt", 25),
                 new MaterialFx.Person("Dark", "Vador", 40));
         mfxTableView.setItems(data);
+
+
+
+        mfxTableView.setStyle("-fx-font-size: 14px;");
+
+        StackPane.setAlignment(mfxTableView, Pos.CENTER);
 
         stackPane.getChildren().addAll(exportIcon, mfxTableView);
 
@@ -514,15 +550,55 @@ public class QueryView {
 
         graphView.getStylableVertex("ex:Alice").setStyleClass("myVertex");
 
-        Group graphGroup = new Group(graphView);
-        stackPane.getChildren().addAll(graphGroup, exportIcon, vbDimension);
+        stackPane.getChildren().addAll(graphView, exportIcon, vbDimension);
+
         vbox.getChildren().add(stackPane);
 
         graphView.setAutomaticLayout(true);
         return vbox;
     }
 
+    /* Import method */
+
+    private void importFile(CodeArea codeArea, Window ownerWindow) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Open File");
+        fileChooser.getExtensionFilters().add(new ExtensionFilter("Text Files", "*.txt"));
+
+        File file = fileChooser.showOpenDialog(ownerWindow);
+        if (file != null) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+                codeArea.clear();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    codeArea.appendText(line + System.lineSeparator());
+                }
+            } catch (IOException e) {
+                showAlert("Error", "An error occurred while importing the file: " + e.getMessage());
+            }
+        }
+    }
+
     /* Export methods */
+
+    private void exportFile(CodeArea codeArea, Window ownerWindow) {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save File");
+        fileChooser.getExtensionFilters().add(new ExtensionFilter("Text Files", "*.txt"));
+
+        File file = fileChooser.showSaveDialog(ownerWindow);
+        if (file != null) {
+            // Ensure the file has the correct extension
+            if (!file.getName().endsWith(".txt")) {
+                file = new File(file.getAbsolutePath() + ".txt");
+            }
+            try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+                writer.write(codeArea.getText());
+            } catch (IOException e) {
+                showAlert("Error", "An error occurred while exporting the file: " + e.getMessage());
+            }
+        }
+    }
 
     private void exportText() {
         FileChooser fileChooser = new FileChooser();
@@ -541,31 +617,6 @@ public class QueryView {
             } catch (IOException e) {
                 showAlert("Error", "An error occurred while saving the file: " + e.getMessage());
             }        }
-    }
-
-    private void exportGraphAsImage() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Save Image");
-        fileChooser.getExtensionFilters().addAll(
-                new ExtensionFilter("PNG Images", "*.png")
-//                new ExtensionFilter("JPG Images", "*.jpg"),
-//                new ExtensionFilter("All Images", "*.*")
-        );
-
-        File file = fileChooser.showSaveDialog(null);
-
-        if (file != null) {
-            String extension = fileChooser.getSelectedExtensionFilter().getExtensions().get(0).replace("*.", "").toLowerCase();
-            WritableImage writableImage = new WritableImage((int) graphView.getWidth(), (int) graphView.getHeight());
-            graphView.snapshot(new SnapshotParameters(), writableImage);
-            BufferedImage bufferedImage = SwingFXUtils.fromFXImage(writableImage, null);
-            try {
-                ImageIO.write(bufferedImage, extension, file);
-            } catch (IOException e) {
-                Alert alert = new Alert(Alert.AlertType.ERROR, "An error occurred while saving the file: " + e.getMessage(), ButtonType.OK);
-                alert.showAndWait();
-            }
-        }
     }
 
     private void exportTable() {
@@ -595,9 +646,63 @@ public class QueryView {
         }
     }
 
+    private void exportGraphAsImage() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Save Image");
+        fileChooser.getExtensionFilters().addAll(
+                new ExtensionFilter("PNG Images", "*.png")
+//                new ExtensionFilter("JPG Images", "*.jpg"),
+//                new ExtensionFilter("All Images", "*.*")
+        );
+
+        File file = fileChooser.showSaveDialog(null);
+
+        if (file != null) {
+            String extension = fileChooser.getSelectedExtensionFilter().getExtensions().get(0).replace("*.", "").toLowerCase();
+            WritableImage writableImage = new WritableImage((int) graphView.getWidth(), (int) graphView.getHeight());
+            graphView.snapshot(new SnapshotParameters(), writableImage);
+            BufferedImage bufferedImage = SwingFXUtils.fromFXImage(writableImage, null);
+            try {
+                ImageIO.write(bufferedImage, extension, file);
+            } catch (IOException e) {
+                Alert alert = new Alert(Alert.AlertType.ERROR, "An error occurred while saving the file: " + e.getMessage(), ButtonType.OK);
+                alert.showAndWait();
+            }
+        }
+    }
+
+    /* Alert method */
+
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
         alert.setTitle(title);
         alert.showAndWait();
+    }
+
+    /* Method for syntax highlighting */
+    
+    private StyleSpans<Collection<String>> computeHighlighting(String text) {
+        Matcher matcher = SPARQL_PATTERN.matcher(text);
+        int lastKwEnd = 0;
+        StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+
+        while (matcher.find()) {
+            String styleClass =
+                    matcher.group("KEYWORD") != null ? "keyword" :
+                            matcher.group("FUNCTION") != null ? "function" :
+                                    matcher.group("VARIABLE") != null ? "variable" :
+                                            matcher.group("URL") != null ? "url" :
+                                                    matcher.group("IRI") != null ? "iri" :
+                                                            matcher.group("LITERAL") != null ? "literal" :
+                                                                    matcher.group("COMMENT") != null ? "comment" :
+                                                                            matcher.group("PREFIX") != null ? "prefix" :
+                                                                                    null;
+            assert styleClass != null;
+            spansBuilder.add(Collections.emptyList(), matcher.start() - lastKwEnd);
+            spansBuilder.add(Collections.singleton(styleClass), matcher.end() - matcher.start());
+            lastKwEnd = matcher.end();
+        }
+        spansBuilder.add(Collections.emptyList(), text.length() - lastKwEnd);
+        return spansBuilder.create();
     }
 }

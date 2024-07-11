@@ -12,9 +12,17 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import org.fxmisc.richtext.CodeArea;
 import org.fxmisc.richtext.LineNumberFactory;
+import org.fxmisc.richtext.model.StyleSpans;
+import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.javafx.Icon;
 import org.kordamp.ikonli.materialdesign2.*;
+
+import java.time.Duration;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ValidationView {
 
@@ -25,6 +33,24 @@ public class ValidationView {
     private TabPane tabPane;
 
     private ObservableList<Tab> tabList = FXCollections.observableArrayList();
+
+    /* Patterns for syntax highlighting */
+
+    private static final String URI_PATTERN = "<[^>]*>";
+    private static final String PREFIX_PATTERN = "@prefix\\s+[^\\s]*\\s*:";
+    private static final String SHACL_KEYWORD_PATTERN = "\\b(?:a|sh:NodeShape|sh:targetClass|sh:path|sh:datatype)\\b";
+    private static final String LITERAL_PATTERN = "\"[^\"]*\"";
+    private static final String COMMENT_PATTERN = "#.*";
+    private static final String CONSTRAINT_PATTERN = "\\b(?:minCount|maxCount|uniqueLang|pattern)\\b";
+
+    private static final Pattern SHACL_PATTERN = Pattern.compile(
+            "(?<URL>" + URI_PATTERN + ")"
+                    + "|(?<PREFIX>" + PREFIX_PATTERN + ")"
+                    + "|(?<KEYWORD>" + SHACL_KEYWORD_PATTERN + ")"
+                    + "|(?<LITERAL>" + LITERAL_PATTERN + ")"
+                    + "|(?<COMMENT>" + COMMENT_PATTERN + ")"
+                    + "|(?<CONSTRAINT>" + CONSTRAINT_PATTERN + ")"
+    );
 
     public VBox getView() {
         VBox validation = createValidation();
@@ -127,20 +153,18 @@ public class ValidationView {
 
         StackPane stackPane = new StackPane();
 
-//        TextArea textArea = new TextArea();
-//        textArea.setPadding(new Insets(10));
-//        textArea.setFont(Font.font("Arial", 14));
-//        HBox.setHgrow(textArea, Priority.ALWAYS);
-//        textArea.setFocusTraversable(false);
-//        textArea.setMaxHeight(600);
-
         CodeArea codeArea = new CodeArea();
         codeArea.setPadding(new Insets(10));
-//        codeArea.setFont(Font.font("Arial", 14));
         HBox.setHgrow(codeArea, Priority.ALWAYS);
         codeArea.setFocusTraversable(false);
         codeArea.setParagraphGraphicFactory(LineNumberFactory.get(codeArea));
         codeArea.setMaxHeight(600);
+        codeArea.setStyle("-fx-font-size: 16px;");
+
+        codeArea.richChanges()
+                .filter(ch -> !ch.getInserted().equals(ch.getRemoved()))
+                .successionEnds(Duration.ofMillis(500))
+                .subscribe(ignore -> codeArea.setStyleSpans(0, computeHighlighting(codeArea.getText())));
 
         Button runButton = new Button("Run");
         FontIcon runIcon = new FontIcon(MaterialDesignP.PLAY_OUTLINE);
@@ -178,7 +202,7 @@ public class ValidationView {
 
         /* All the icon button */
 //        VBox iconsBox = createIconsBox(primaryStage, textArea);
-        VBox iconsBox = editorModule.createIconsBox(primaryStage, new CodeArea(), tabPane);
+        VBox iconsBox = editorModule.createIconsBox(primaryStage, codeArea, tabPane);
 
         hbox.getChildren().addAll(textGrid, iconsBox);
 
@@ -217,4 +241,36 @@ public class ValidationView {
         return vbox;
     }
 
+    /* Method for syntax highlighting */
+
+    private StyleSpans<Collection<String>> computeHighlighting(String text) {
+        Matcher matcher = SHACL_PATTERN.matcher(text);
+        StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
+
+        int lastIndex = 0;
+        while (matcher.find()) {
+            String styleClass = null;
+            if (matcher.group("URL") != null) {
+                styleClass = "url";
+            } else if (matcher.group("PREFIX") != null) {
+                styleClass = "prefix";
+            } else if (matcher.group("KEYWORD") != null) {
+                styleClass = "keyword";
+            } else if (matcher.group("LITERAL") != null) {
+                styleClass = "literal";
+            } else if (matcher.group("COMMENT") != null) {
+                styleClass = "comment";
+            } else if (matcher.group("CONSTRAINT") != null) {
+                styleClass = "constraint";
+            }
+            if (styleClass != null) {
+                spansBuilder.add(Collections.emptyList(), matcher.start() - lastIndex);
+                spansBuilder.add(Collections.singleton(styleClass), matcher.end() - matcher.start());
+                lastIndex = matcher.end();
+            }
+        }
+        spansBuilder.add(Collections.emptyList(), text.length() - lastIndex);
+
+        return spansBuilder.create();
+    }
 }

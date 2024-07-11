@@ -75,9 +75,47 @@
     -fx-border-color: white;
  }
 
-.code-area {
-    -fx-text-fill: blue;
+
+/* Syntax highlighting */
+
+.prefix {
+    -fx-fill: #009900;
 }
+
+.url {
+    -fx-fill: #0000FF;
+}
+
+.keyword {
+    -fx-fill: #0000FF;
+    -fx-font-weight: bold;
+}
+
+.function {
+    -fx-fill: #A52A2A;
+    -fx-font-style: italic;
+}
+
+.literal {
+    -fx-fill: orange;
+}
+
+.comment {
+    -fx-fill: green;
+}
+
+.constraint {
+    -fx-fill: #ff4500;
+}
+
+.variable {
+    -fx-fill: #800080;
+}
+
+.iri {
+    -fx-fill: #FF4500;
+}
+
 
 
 
