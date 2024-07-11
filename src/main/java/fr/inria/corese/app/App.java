@@ -1,5 +1,6 @@
 package fr.inria.corese.app;
 
+import fr.inria.corese.controller.DataController;
 import fr.inria.corese.view.*;
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -40,10 +41,12 @@ public class App extends Application {
         MenuUI menuUI = new MenuUI(this);
         root.setLeft(menuUI.getMenu());
 
-        dataView = new DataView();
+        DataController dataController = new DataController();
+
+        dataView = new DataView(dataController);
         editorView = new EditorView();
         validationView = new ValidationView();
-        queryView = new QueryView();
+        queryView = new QueryView(dataController);
         settingsView = new SettingsView();
 
         showDataView();

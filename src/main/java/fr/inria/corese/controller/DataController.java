@@ -26,6 +26,9 @@ public class DataController {
         this.graph = Graph.create();
     }
 
+
+    /* To retrieve the data graph */
+
     public Graph getGraph() {
         return graph;
     }

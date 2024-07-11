@@ -1,6 +1,7 @@
 package fr.inria.corese.view.data;
 
 import fr.inria.corese.controller.DataController;
+import fr.inria.corese.controller.QueryController;
 import fr.inria.corese.view.DataView;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -28,8 +29,11 @@ public class FilesContentView {
     public Button clearGraphButton;
     public Button reloadButton;
     private List<File> currentFiles = new ArrayList<>();
-    private DataController dataController = new DataController();
+    private DataController dataController;
 
+    public FilesContentView(DataController dataController) {
+        this.dataController = dataController;
+    }
 
     public VBox createFilesContent(DataView dataView, LogsContentView logsContentView) {
         VBox vbox = new VBox();

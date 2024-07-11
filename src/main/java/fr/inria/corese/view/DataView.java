@@ -1,5 +1,6 @@
 package fr.inria.corese.view;
 
+import fr.inria.corese.controller.DataController;
 import fr.inria.corese.view.data.FilesContentView;
 import fr.inria.corese.view.data.LogsContentView;
 import fr.inria.corese.view.data.RdfContentView;
@@ -35,6 +36,12 @@ public class DataView {
     private LogsContentView logsContentView;
     private StatsContentView statsContentView;
 
+    private DataController dataController;
+
+    public DataView(DataController dataController) {
+        this.dataController = dataController;
+    }
+
     public VBox getView() {
         VBox data = createData();
         return data;
@@ -48,7 +55,7 @@ public class DataView {
 
         /* Initialize the content of DataView */
 
-        filesContentView = new FilesContentView();
+        filesContentView = new FilesContentView(dataController);
         rdfContentView = new RdfContentView();
         logsContentView = new LogsContentView();
         statsContentView = new StatsContentView();

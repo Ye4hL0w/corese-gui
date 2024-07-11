@@ -7,6 +7,7 @@ import com.brunomnsilva.smartgraph.graphview.SmartCircularSortedPlacementStrateg
 import com.brunomnsilva.smartgraph.graphview.SmartGraphPanel;
 import com.brunomnsilva.smartgraph.graphview.SmartPlacementStrategy;
 import fr.inria.corese.aDemo.MaterialFx;
+import fr.inria.corese.controller.DataController;
 import fr.inria.corese.controller.QueryController;
 import io.github.palexdev.materialfx.controls.MFXTableColumn;
 import io.github.palexdev.materialfx.controls.MFXTableView;
@@ -41,10 +42,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.time.Duration;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -62,6 +60,7 @@ public class QueryView {
 
     private ObservableList<Tab> tabList = FXCollections.observableArrayList();
 
+    private DataController dataController = new DataController();
     private QueryController queryController;
 
     /* Patterns for syntax highlighting */
@@ -76,7 +75,6 @@ public class QueryView {
     private static final String SPARQL_KEYWORD_PATTERN = "(?i)\\b(SELECT|WHERE|FILTER|OPTIONAL|UNION|GROUP\\s+BY|ORDER\\s+BY|LIMIT|OFFSET|DESCRIBE|CONSTRUCT|ASK)\\b";
     private static final String SPARQL_FUNCTION_PATTERN = "(?i)\\b(STR|LANG|LANGMATCHES|DATATYPE|BOUND|IRI|URI|BNODE|RAND|ABS|CEIL|FLOOR|ROUND|CONCAT|SUBSTR|STRLEN|UCASE|LCASE|ENCODE_FOR_URI|REPLACE|EXISTS|REGEX)\\b";
 
-    // Combined SPARQL pattern
     private static final Pattern SPARQL_PATTERN = Pattern.compile(
             "(?<KEYWORD>" + SPARQL_KEYWORD_PATTERN + ")" +
                     "|(?<FUNCTION>" + SPARQL_FUNCTION_PATTERN + ")" +
@@ -87,6 +85,10 @@ public class QueryView {
                     "|(?<COMMENT>" + COMMENT_PATTERN + ")" +
                     "|(?<PREFIX>" + PREFIX_PATTERN + ")"
     );
+
+    public QueryView(DataController dataController) {
+        this.queryController = new QueryController(dataController);
+    }
 
     public VBox getView() {
         VBox query = createQuery();
@@ -204,7 +206,7 @@ public class QueryView {
         FontIcon importIcon = new FontIcon(MaterialDesignA.APPLICATION_IMPORT);
         importIcon.setIconSize(34);
         importIcon.setOnMouseClicked(event -> {
-            importFile(codeArea, tabContent.getScene().getWindow());
+            importFile(codeArea, tabContent.getScene().getWindow(), tabPane.getSelectionModel().getSelectedItem());
         });
         importIcon.getStyleClass().add("custom-icon");
         Tooltip importTooltip = new Tooltip("Import file");
@@ -379,6 +381,7 @@ public class QueryView {
 
         ComboBox<String> cbTypeOfFile = new ComboBox<>();
         cbTypeOfFile.getItems().addAll("XML", "JSON", "CSV", "TSV");
+        cbTypeOfFile.setValue("XML");
 
         Pane spacer = new Pane();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -397,6 +400,8 @@ public class QueryView {
 
         textData  = new Label("Text");
         vbox.getChildren().addAll(hBox, textData);
+
+        textData.setText(queryController.getXMLResult());
 
         return vbox;
     }
@@ -423,42 +428,10 @@ public class QueryView {
         StackPane.setAlignment(exportIcon, Pos.TOP_RIGHT);
 
         // TABLE
-        mfxTableView = new MFXTableView<>();
-        mfxTableView.setPrefWidth(600);
-        mfxTableView.setPrefHeight(450);
-        mfxTableView.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(1))));
-
-        MFXTableColumn<MaterialFx.Person> firstNameColumn = new MFXTableColumn<>("First Name", true,
-                Comparator.comparing(MaterialFx.Person::getFirstName));
-        firstNameColumn.setRowCellFactory(person -> new MFXTableRowCell<>(MaterialFx.Person::getFirstName));
-        firstNameColumn.setFont(new Font(16));
-
-        MFXTableColumn<MaterialFx.Person> lastNameColumn = new MFXTableColumn<>("Last Name", true,
-                Comparator.comparing(MaterialFx.Person::getLastName));
-        lastNameColumn.setRowCellFactory(person -> new MFXTableRowCell<>(MaterialFx.Person::getLastName));
-        lastNameColumn.setFont(new Font(16));
-
-        MFXTableColumn<MaterialFx.Person> ageColumn = new MFXTableColumn<>("Age", true, Comparator.comparingInt(MaterialFx.Person::getAge));
-        ageColumn.setRowCellFactory(person -> new MFXTableRowCell<>(p -> String.valueOf(p.getAge())));
-        ageColumn.setFont(new Font(16));
-
-        mfxTableView.getTableColumns().addAll(firstNameColumn, lastNameColumn, ageColumn);
-
-        ObservableList<MaterialFx.Person> data = FXCollections.observableArrayList(
-                new MaterialFx.Person("Jérémy", "Moncada", 30),
-                new MaterialFx.Person("Marty", "McFly", 25),
-                new MaterialFx.Person("Paul", "Bond", 25),
-                new MaterialFx.Person("Jacques", "Marty", 25),
-                new MaterialFx.Person("Léa", "Totk", 25),
-                new MaterialFx.Person("Pierre", "Teso", 25),
-                new MaterialFx.Person("Pedro", "Peter", 25),
-                new MaterialFx.Person("Nox", "Pitt", 25),
-                new MaterialFx.Person("Dark", "Vador", 40));
-        mfxTableView.setItems(data);
-
-
-
-        mfxTableView.setStyle("-fx-font-size: 14px;");
+        MFXTableView<Map<fr.inria.corese.kgram.api.core.Node, fr.inria.corese.kgram.api.core.Node>> mfxTableView = queryController.getTableView();
+//        mfxTableView.setPrefWidth(600);
+//        mfxTableView.setPrefHeight(450);
+//        mfxTableView.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, new BorderWidths(1))));
 
         StackPane.setAlignment(mfxTableView, Pos.CENTER);
 
@@ -555,12 +528,31 @@ public class QueryView {
         vbox.getChildren().add(stackPane);
 
         graphView.setAutomaticLayout(true);
+
+        /*Digraph<String, String> graph = queryController.getDigraph();
+
+        if (graph != null) {
+            graphView = new SmartGraphPanel<>(graph, new SmartCircularSortedPlacementStrategy());
+            graphView.setAutomaticLayout(true);
+
+            stackPane.getChildren().addAll(graphView, exportIcon, vbDimension);
+        } else {
+            Label noGraphLabel = new Label("No graph data available.");
+            stackPane.getChildren().add(noGraphLabel);
+        }
+
+        vbox.getChildren().add(stackPane);
+
+        if (graphView != null) {
+            graphView.setAutomaticLayout(true);
+        }*/
+
         return vbox;
     }
 
     /* Import method */
 
-    private void importFile(CodeArea codeArea, Window ownerWindow) {
+    private void importFile(CodeArea codeArea, Window ownerWindow, Tab tab) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open File");
         fileChooser.getExtensionFilters().add(new ExtensionFilter("Text Files", "*.txt"));
@@ -573,6 +565,10 @@ public class QueryView {
                 while ((line = reader.readLine()) != null) {
                     codeArea.appendText(line + System.lineSeparator());
                 }
+
+                String fileName = file.getName();
+                tab.setText(fileName);
+
             } catch (IOException e) {
                 showAlert("Error", "An error occurred while importing the file: " + e.getMessage());
             }
@@ -680,7 +676,7 @@ public class QueryView {
     }
 
     /* Method for syntax highlighting */
-    
+
     private StyleSpans<Collection<String>> computeHighlighting(String text) {
         Matcher matcher = SPARQL_PATTERN.matcher(text);
         int lastKwEnd = 0;
@@ -705,4 +701,5 @@ public class QueryView {
         spansBuilder.add(Collections.emptyList(), text.length() - lastKwEnd);
         return spansBuilder.create();
     }
+
 }
