@@ -114,7 +114,7 @@ public class EditorView {
     /**
      * Creates the initial RDF editor view with buttons for creating new files and opening folders.
      * <p>
-     * This view is instantiated in {@code mainview} by the constructor {@link EditorView}.
+     * This view is instantiated in {@code stackPane} by the constructor {@link EditorView}.
      * </p>
      *
      * @return an {@link HBox} containing the initial view.
@@ -264,14 +264,16 @@ public class EditorView {
     /**
      * This method is called in {@link #createEditorContent()} to create the content of a new {@link Tab}.
      * <p>
-     * It instantiates a {@link TextArea} and a section for displaying secondary icons.
+     * It instantiates a {@link TextArea} and a calls the method of {@link EditorModule} for displaying secondary icons.
      * </p>
      *
      * @return a {@link VBox} containing the content of a new {@link Tab}.
+     *
      * @see #createEditorContent()
      * @see Tab
      * @see TextArea
      * @see VBox
+     * @see EditorModule
      */
     private VBox createTabContent() {
 

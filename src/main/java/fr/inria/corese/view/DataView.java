@@ -10,7 +10,6 @@ import javafx.animation.Timeline;
 import javafx.geometry.Insets;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
@@ -25,7 +24,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.Optional;
 
 /**
  * {@link DataView} is a JavaFX component with the role of view in the code architecture.

@@ -2,58 +2,36 @@ package fr.inria.corese.view;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.fxmisc.richtext.CodeArea;
-import org.fxmisc.richtext.StyleClassedTextArea;
-import org.fxmisc.richtext.model.StyleSpans;
-import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.kordamp.ikonli.javafx.FontIcon;
 import org.kordamp.ikonli.materialdesign2.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Collection;
-import java.util.Collections;
 
+/**
+ * The {@link EditorModule} class provides functionalities for creating a user interface with icons for file operations
+ * (save, open, import, undo, redo, open book, information) and methods to handle these operations.
+ * <p>
+ * This module is reused in various views such as {@link EditorView}, {@link ValidationView}, and {@link QueryView}
+ * to maintain consistency and reusability across the application.
+ *
+ * @see EditorView
+ * @see ValidationView
+ * @see QueryView
+ *
+ * </p>
+ */
 public class EditorModule {
-
-    /**
-     * Creates an area showing line numbers for the given text area.
-     * This method is called in {@link EditorView}.
-     * <p>
-     * She uses a {@link TextArea#textProperty()} listener to monitor changes in the {@link TextArea}.
-     * </p>
-     *
-     * @param textArea the text area for which to create line numbers.
-     * @return a {@link VBox} containing the line numbers.
-     */
-//    public VBox createLineNumberArea(TextArea textArea) {
-//        VBox lineNumberArea = new VBox();
-//        lineNumberArea.setAlignment(Pos.TOP_RIGHT);
-//        lineNumberArea.setPadding(new Insets(15, 5, 0, 5));
-//
-//        textArea.scrollTopProperty().addListener((observable, oldValue, newValue) -> {
-//            lineNumberArea.setTranslateY(-newValue.doubleValue());
-//        });
-//
-//        textArea.textProperty().addListener((observable, oldValue, newValue) -> {
-//            int lineCount = textArea.getText().split("\n", -1).length;
-//            lineNumberArea.getChildren().clear();
-//            for (int i = 1; i <= lineCount; i++) {
-//                Label lineLabel = new Label(String.valueOf(i));
-//                lineLabel.setFont(Font.font("Arial", 14));
-//                lineLabel.setPadding(new Insets(0, 0, 1.1995, 0));
-//                lineNumberArea.getChildren().add(lineLabel);
-//            }
-//        });
-//
-//        return lineNumberArea;
-//    }
 
     /**
      * Creates a {@link VBox} containing icons for file operations.

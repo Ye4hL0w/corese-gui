@@ -12,9 +12,21 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+/**
+ * The {@link LogsContentView} class provides a view for displaying logs within the application.
+ * <p>
+ * It allows logging of various events, such as file loading, and displays these logs
+ * with timestamps.
+ * </p>
+ */
 public class LogsContentView {
     public VBox logContent;
 
+    /**
+     * Creates the content view for displaying logs.
+     *
+     * @return the {@link VBox} containing the logs UI
+     */
     public VBox createLogsContent() {
         VBox vbLogs = new VBox();
         VBox.setVgrow(vbLogs, Priority.ALWAYS);
@@ -43,6 +55,12 @@ public class LogsContentView {
 
     /* Show the logs */
 
+    /**
+     * Adds a log message to the log view.
+     *
+     * @param message the log message to add
+     * @param color   the color of the log message text
+     */
     private void addLogMessage(String message, Color color) {
         TextFlow logMessageFlow = new TextFlow();
         logMessageFlow.setMaxWidth(Double.MAX_VALUE);
@@ -60,11 +78,21 @@ public class LogsContentView {
         logContent.getChildren().add(logMessageFlow);
     }
 
+    /**
+     * Gets the current timestamp formatted as HH:mm:ss.
+     *
+     * @return the current timestamp as a string
+     */
     private String getCurrentTimestamp() {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
         return "[" + sdf.format(new Date()) + "] ";
     }
 
+    /**
+     * Logs the file loading event with the file's path and extension.
+     *
+     * @param file the file that is being loaded
+     */
     public void logFileLoading(File file) {
 //        String loadingStr = "Loading " + getFileExtension(file) + " File from path : ";
 //        Text loadingText = new Text(loadingStr);
@@ -74,6 +102,12 @@ public class LogsContentView {
 //        addLogMessage(" ", Color.WHITE);
     }
 
+    /**
+     * Gets the file extension of a given file.
+     *
+     * @param file the file whose extension is to be retrieved
+     * @return the file extension as a string
+     */
     private String getFileExtension(File file) {
         String fileName = file.getName();
         int dotIndex = fileName.lastIndexOf('.');

@@ -7,14 +7,19 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
+/**
+ * The {@link StatsContentView} class provides a view for displaying various statistical data
+ * related to semantic elements, triplets, graphs, and rules.
+ */
 public class StatsContentView {
 
     DataController dataController = new DataController();
 
-    public VBox getView() {
-        return createStatsContent();
-    }
-
+    /**
+     * Creates the content view for displaying statistical data.
+     *
+     * @return the {@link VBox} containing the statistics content
+     */
     public VBox createStatsContent() {
         VBox vbox = new VBox();
         vbox.setSpacing(10);

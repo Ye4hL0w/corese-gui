@@ -1,7 +1,6 @@
 package fr.inria.corese.view.data;
 
 import fr.inria.corese.controller.DataController;
-import fr.inria.corese.controller.QueryController;
 import fr.inria.corese.view.DataView;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -24,6 +23,16 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * The {@link FilesContentView} class provides a view for managing files within the application.
+ * <p>
+ * It allows users to load, display, reload, and clear files, integrating with the
+ * {@link DataController} for backend operations.
+ * </p>
+ *
+ * @see FilesContentView
+ * @see DataController
+ */
 public class FilesContentView {
     public VBox vbFileItem = new VBox();
     public Button clearGraphButton;
@@ -31,10 +40,26 @@ public class FilesContentView {
     private List<File> currentFiles = new ArrayList<>();
     private DataController dataController;
 
+    /**
+     * Constructs a new {@link FilesContentView} with the specified {@link DataController}.
+     *
+     * @param dataController the controller to manage data operations
+     */
     public FilesContentView(DataController dataController) {
         this.dataController = dataController;
     }
 
+    /**
+     * Creates the content view for managing files.
+     *
+     * @param dataView         the {@link DataView} to display file loading notifications
+     * @param logsContentView  the {@link LogsContentView} to log file loading actions
+     *
+     * @return the {@link VBox} containing the file management UI
+     *
+     * @see DataView
+     * @see LogsContentView
+     */
     public VBox createFilesContent(DataView dataView, LogsContentView logsContentView) {
         VBox vbox = new VBox();
         VBox.setVgrow(vbox, Priority.ALWAYS);
@@ -108,6 +133,13 @@ public class FilesContentView {
 
     /* Method to display the new files upload */
 
+    /**
+     * Adds a {@link File} item to the view and processes the {@link File}.
+     *
+     * @param file the file to be added
+     *
+     * @see File
+     */
     public void addFileItem(File file) {
         String[] allowedExtensions = { ".rdf", ".ttl", ".trig", ".jsonld", ".nt", ".nq", ".html" };
 
@@ -186,6 +218,12 @@ public class FilesContentView {
 
     /* Alert Pop-Up */
 
+    /**
+     * Displays a warning popup before performing a critical action that will reset the graph.
+     *
+     * @param actionType the type of action to be confirmed
+     * @param onContinue the action to perform if the user confirms
+     */
     public void showWarningPopup(String actionType, Runnable onContinue) {
         Alert alert = new Alert(Alert.AlertType.WARNING);
         alert.setTitle("Alert");
@@ -215,6 +253,11 @@ public class FilesContentView {
 
     /* About file */
 
+    /**
+     * Displays a popup with information about the selected file.
+     *
+     * @param file the file to display information about
+     */
     public void showFileInfoPopup(File file) {
         try {
             long startTime = System.nanoTime();
@@ -246,6 +289,12 @@ public class FilesContentView {
         }
     }
 
+    /**
+     * Gets the file extension of a given file.
+     *
+     * @param file the file whose extension is to be retrieved
+     * @return the file extension as a string
+     */
     private String getFileExtension(File file) {
         String fileName = file.getName();
         int dotIndex = fileName.lastIndexOf('.');
@@ -254,6 +303,9 @@ public class FilesContentView {
 
     /* Reload Files */
 
+    /**
+     * Reloads the currently loaded files.
+     */
     public void reloadFiles() {
         vbFileItem.getChildren().clear();
         dataController.clearGraph(); // controller action
@@ -264,6 +316,9 @@ public class FilesContentView {
         updateButtonState();
     }
 
+    /**
+     * Updates the state of the clear and reload buttons based on the current files.
+     */
     private void updateButtonState() {
         if (vbFileItem.getChildren().isEmpty()) {
             clearGraphButton.setDisable(true);
