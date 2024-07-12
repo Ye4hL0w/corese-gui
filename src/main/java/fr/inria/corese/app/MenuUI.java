@@ -9,12 +9,27 @@ import org.kordamp.ikonli.materialdesign2.MaterialDesignC;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignD;
 import org.kordamp.ikonli.materialdesign2.MaterialDesignM;
 
+/**
+ * The {@link MenuUI} class creates and manages the user interface for the application menu.
+ * <p>
+ * It provides a vertical menu with buttons for various application views such as Data, RDF Editor, Validation, Query, and Settings.
+ * Each button is associated with an icon and a specific action that triggers the display of the corresponding view in the application.
+ * </p>
+ */
 public class MenuUI {
     private boolean isMenuExpanded = true;
     private Button activeButton;
     private VBox vbLeft;
     private VBox menuBox;
 
+    /**
+     * Constructs a new {@link MenuUI} instance with the specified {@link App} instance.
+     * <p>
+     * This constructor initializes the menu with buttons for different views in the application and sets up their icons and actions.
+     * </p>
+     *
+     * @param app the {@link App} instance used to display different views of the application.
+     */
     public MenuUI(App app) {
         vbLeft = new VBox();
         vbLeft.setAlignment(Pos.TOP_LEFT);
@@ -108,10 +123,23 @@ public class MenuUI {
         settingsButton.getStyleClass().add("custom-button");
     }
 
+    /**
+     * Returns the {@link VBox} containing the menu buttons.
+     *
+     * @return the {@link VBox} instance that represents the {@link MenuUI}.
+     */
     public VBox getMenu() {
         return vbLeft;
     }
 
+    /**
+     * Sets the specified button as the active button by updating its style.
+     * <p>
+     * The active button is highlighted with a specific style class, and any previously active button has its style updated to indicate it is no longer active.
+     * </p>
+     *
+     * @param button the {@link Button} to be set as the active button.
+     */
     private void setActiveButton(Button button) {
         if (activeButton != null) {
             activeButton.getStyleClass().remove("active-button");

@@ -264,14 +264,14 @@ public class EditorView {
     /**
      * This method is called in {@link #createEditorContent()} to create the content of a new {@link Tab}.
      * <p>
-     * It instantiates a {@link TextArea} and a calls the method of {@link EditorModule} for displaying secondary icons.
+     * It instantiates a {@link CodeArea} and a calls the method of {@link EditorModule} for displaying secondary icons.
      * </p>
      *
      * @return a {@link VBox} containing the content of a new {@link Tab}.
      *
      * @see #createEditorContent()
      * @see Tab
-     * @see TextArea
+     * @see CodeArea
      * @see VBox
      * @see EditorModule
      */
@@ -479,6 +479,18 @@ public class EditorView {
 
     /* Method for syntax highlighting */
 
+    /**
+     * Computes the syntax highlighting for the given text.
+     * <p>
+     * This method applies different styles to different parts of the text based on predefined patterns.
+     * </p>
+     *
+     * @param text the text to apply syntax highlighting to.
+     *
+     * @return a {@link StyleSpans} object containing the styles for the text.
+     *
+     * @see StyleSpans
+     */
     private StyleSpans<Collection<String>> computeHighlighting(String text) {
         Matcher matcher = PATTERN.matcher(text);
         int lastKwEnd = 0;
@@ -490,7 +502,7 @@ public class EditorView {
                                     matcher.group("KEYWORD") != null ? "keyword" :
                                             matcher.group("LITERAL") != null ? "literal" :
                                                     matcher.group("COMMENT") != null ? "comment" :
-                                                            null; /* never happens */ assert styleClass != null;
+                                                            null; assert styleClass != null;
             spansBuilder.add(Collections.emptyList(), matcher.start() - lastKwEnd);
             spansBuilder.add(Collections.singleton(styleClass), matcher.end() - matcher.start());
             lastKwEnd = matcher.end();
@@ -498,5 +510,4 @@ public class EditorView {
         spansBuilder.add(Collections.emptyList(), text.length() - lastKwEnd);
         return spansBuilder.create();
     }
-
 }

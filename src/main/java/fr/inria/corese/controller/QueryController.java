@@ -1,15 +1,11 @@
 package fr.inria.corese.controller;
 
 import com.brunomnsilva.smartgraph.graph.Digraph;
-import com.brunomnsilva.smartgraph.graph.DigraphEdgeList;
-import fr.inria.corese.aDemo.MaterialFx;
 import fr.inria.corese.core.Graph;
 import fr.inria.corese.core.query.QueryProcess;
-import fr.inria.corese.kgram.api.core.Edge;
 import fr.inria.corese.kgram.api.core.Node;
 import fr.inria.corese.kgram.core.Mapping;
 import fr.inria.corese.kgram.core.Mappings;
-import fr.inria.corese.sparql.compiler.java.Datatype;
 import io.github.palexdev.materialfx.controls.MFXTableColumn;
 import io.github.palexdev.materialfx.controls.MFXTableView;
 import io.github.palexdev.materialfx.controls.cell.MFXTableRowCell;
@@ -21,6 +17,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * The {@link QueryController} class handles the execution of SPARQL queries against an RDF graph
+ * and manages the display of query results.
+ * <p>
+ * It interacts with a {@link DataController} to access and manipulate the RDF graph and provides methods
+ * for handling different types of SPARQL queries, including SELECT, ASK, CONSTRUCT, and UPDATE queries.
+ * </p>
+ */
 public class QueryController {
 
     private DataController dataController;
@@ -29,16 +33,34 @@ public class QueryController {
     private Digraph<String, String> constructResultDigraph;
     private List<Mapping> currentMappings;
 
+    /**
+     * Constructs a new {@link QueryController} with the specified {@link DataController}.
+     *
+     * @param dataController the {@link DataController} used to access and manipulate the RDF graph.
+     */
     public QueryController(DataController dataController) {
         this.dataController = dataController;
         this.graph = getGraph();
         this.mfxTableView = createTableView();
     }
 
+    /**
+     * Retrieves the {@link Graph} from the {@link DataController}.
+     *
+     * @return the current {@link Graph}.
+     */
     private Graph getGraph() {
         return dataController.getGraph();
     }
 
+    /**
+     * Executes the given SPARQL query and handles the result based on the type of query.
+     * <p>
+     * The method handles SELECT, ASK, CONSTRUCT, and UPDATE queries differently and processes the results accordingly.
+     * </p>
+     *
+     * @param query the SPARQL query to execute.
+     */
     public void handleQueryExecution(String query) {
         QueryProcess exec = QueryProcess.create(graph);
         try {
@@ -59,6 +81,14 @@ public class QueryController {
         }
     }
 
+    /**
+     * Handles the results of a SELECT query and updates the {@link MFXTableView} with the results.
+     * <p>
+     * This method processes the mappings from the query result and populates the table view with the retrieved data.
+     * </p>
+     *
+     * @param map the {@link Mappings} object containing the results of the SELECT query.
+     */
     private void handleSelectQuery(Mappings map) {
         currentMappings = map.getMappingList();
 
@@ -105,17 +135,34 @@ public class QueryController {
         mfxTableView.setItems(data);
     }
 
+    /**
+     * Handles the result of an ASK query and prints the result to the console.
+     * <p>
+     * The method checks if the ASK query returned any results and prints a boolean indicating the presence of results.
+     * </p>
+     *
+     * @param map the {@link Mappings} object containing the result of the ASK query.
+     */
     private void handleAskQuery(Mappings map) {
         boolean result = !map.isEmpty();
         System.out.println("ASK query result: " + result);
     }
 
+    /**
+     * Handles the result of a CONSTRUCT query and prints the resulting graph as a string to the console.
+     * <p>
+     * The method converts the resulting graph to a string and prints it to the console.
+     * </p>
+     *
+     * @param map the {@link Mappings} object containing the result of the CONSTRUCT query.
+     */
     private void handleConstructQuery(Mappings map) {
         Graph resultGraph = (Graph) map.getGraph();
         String graphString = resultGraph.display();
         System.out.println("CONSTRUCT query result:\n" + graphString);
     }
 
+    // This method commented below is used to construct the graphical result of the build query, it is not implemented correctly, so it does not work
     //    private void handleConstructQuery(Mappings map) {
 //        Graph resultGraph = (Graph) map.getGraph();
 //
@@ -147,12 +194,28 @@ public class QueryController {
 //        }
 //    }
 
+    /**
+     * Handles the result of an UPDATE query and prints a success message to the console.
+     * <p>
+     * The method indicates that the update query has been executed successfully.
+     * </p>
+     *
+     * @param map the {@link Mappings} object containing the result of the UPDATE query.
+     */
     private void handleUpdateQuery(Mappings map) {
         System.out.println("Update query executed successfully.");
     }
 
     /* Method for Text Result XML */
 
+    /**
+     * Converts the current query results to an XML format.
+     * <p>
+     * This method generates an XML representation of the query results based on the current mappings.
+     * </p>
+     *
+     * @return an XML string representing the query results.
+     */
     public String convertResultsToXML() {
         if (currentMappings == null || currentMappings.isEmpty()) {
             return "<results>No data available</results>";
@@ -177,6 +240,11 @@ public class QueryController {
         return xmlBuilder.toString();
     }
 
+    /**
+     * Returns the current XML representation of the query results.
+     *
+     * @return the XML string representing the query results.
+     */
     public String getXMLResult() {
         return convertResultsToXML();
     }
@@ -184,6 +252,11 @@ public class QueryController {
 
     /* Method for TableView */
 
+    /**
+     * Creates and configures a new {@link MFXTableView} for displaying query results.
+     *
+     * @return a new {@link MFXTableView} configured for displaying query results.
+     */
     private MFXTableView<Map<Node, Node>> createTableView() {
         MFXTableView<Map<Node, Node>> tableView = new MFXTableView<>();
         tableView.setPrefWidth(1050);
@@ -192,12 +265,22 @@ public class QueryController {
         return tableView;
     }
 
+    /**
+     * Returns the {@link MFXTableView} used for displaying query results.
+     *
+     * @return the {@link MFXTableView} instance.
+     */
     public MFXTableView<Map<Node, Node>> getTableView() {
         return mfxTableView;
     }
 
     /* Method for Diagraph */
 
+    /**
+     * Returns the {@link Digraph} created from the results of a CONSTRUCT query.
+     *
+     * @return the {@link Digraph} representing the CONSTRUCT query result.
+     */
     public Digraph<String, String> getDigraph() {
         return constructResultDigraph;
     }

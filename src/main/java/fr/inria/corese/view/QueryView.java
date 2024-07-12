@@ -9,15 +9,12 @@ import com.brunomnsilva.smartgraph.graphview.SmartPlacementStrategy;
 import fr.inria.corese.aDemo.MaterialFx;
 import fr.inria.corese.controller.DataController;
 import fr.inria.corese.controller.QueryController;
-import io.github.palexdev.materialfx.controls.MFXTableColumn;
 import io.github.palexdev.materialfx.controls.MFXTableView;
-import io.github.palexdev.materialfx.controls.cell.MFXTableRowCell;
 import io.github.palexdev.mfxcore.utils.fx.SwingFXUtils;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.SnapshotParameters;
 import javafx.scene.control.*;
@@ -42,10 +39,20 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.time.Duration;
-import java.util.*;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+/**
+ * The {@link QueryView} class represents the view for executing and displaying the results of SPARQL queries.
+ * <p>
+ * It provides a user interface for inputting queries, running them, and viewing the results in various formats.
+ * </p>
+ */
 public class QueryView {
 
     private EditorModule editorModule = new EditorModule();
@@ -86,15 +93,37 @@ public class QueryView {
                     "|(?<PREFIX>" + PREFIX_PATTERN + ")"
     );
 
+    /**
+     * Constructs a new QueryView.
+     * <p>
+     * Initializes the layout and components of the view.
+     * </p>
+     * <p>
+     * Allows you to retrieve the instance of {@link DataController}.
+     * </p>
+     *
+     * @param dataController the controller for managing data operations.
+     *
+     */
     public QueryView(DataController dataController) {
         this.queryController = new QueryController(dataController);
     }
 
+    /**
+     * Gets the main view of the query interface.
+     *
+     * @return a {@link VBox} containing the query interface.
+     */
     public VBox getView() {
         VBox query = createQuery();
         return query;
     }
 
+    /**
+     * Creates the main query interface.
+     *
+     * @return a {@link VBox} containing the query interface.
+     */
     public VBox createQuery(){
         VBox vbQuery = new VBox();
         vbQuery.setSpacing(10);
@@ -174,6 +203,19 @@ public class QueryView {
         return hbCenter;
     }
 
+    /**
+     * This method is called in {@link #createEditorContent()} to create the content of a new {@link Tab}.
+     * <p>
+     * It instantiates a {@link CodeArea}.
+     * </p>
+     *
+     * @return a {@link VBox} containing the content of a new {@link Tab}.
+     *
+     * @see #createEditorContent()
+     * @see Tab
+     * @see CodeArea
+     * @see VBox
+     */
     private VBox createTabContent() {
 
         VBox tabContent = new VBox();
@@ -294,6 +336,11 @@ public class QueryView {
         return tabContent;
     }
 
+    /**
+     * Creates the result content view for displaying query results.
+     *
+     * @return a {@link VBox} containing the result content.
+     */
     public VBox createResultContent() {
         VBox vbox = new VBox();
         VBox.setVgrow(vbox, Priority.ALWAYS);
@@ -343,6 +390,16 @@ public class QueryView {
         return vbox;
     }
 
+    /**
+     * Adds drag-and-drop support to a given tab within a {@link TabPane} and {@link SplitPane}.
+     * <p>
+     * Allows the tab to be dragged out of the tab pane into a new tab pane within the split pane.
+     * </p>
+     *
+     * @param tab the tab to which drag-and-drop support is added
+     * @param tabPane the original tab pane containing the tab
+     * @param splitPane the split pane that may contain the new tab pane
+     */
     private void addDragAndDropSupport(Tab tab, TabPane tabPane, SplitPane splitPane) {
         tab.getGraphic().setOnDragDetected(event -> {
             tabPane.getTabs().remove(tab);
@@ -359,6 +416,11 @@ public class QueryView {
         });
     }
 
+    /**
+     * Removes empty tab panes from a {@link SplitPane}.
+     *
+     * @param splitPane the split pane from which empty tab panes are removed
+     */
     private void removeEmptyTabPane(SplitPane splitPane) {
         for (Iterator<Node> iterator = splitPane.getItems().iterator(); iterator.hasNext(); ) {
             Node node = iterator.next();
@@ -371,6 +433,11 @@ public class QueryView {
         }
     }
 
+    /**
+     * Creates a {@link VBox} containing text result with export functionality and file type selection.
+     *
+     * @return a {@link VBox} containing the text result
+     */
     private VBox createTextResult() {
         VBox vbox = new VBox();
         vbox.setPadding(new Insets(10));
@@ -406,6 +473,16 @@ public class QueryView {
         return vbox;
     }
 
+    /**
+     * Creates a {@link VBox} containing a table result with export functionality.
+     * <p>
+     * Use a {@link MFXTableView} to display the table.
+     * </p>
+     *
+     * @return a {@link VBox} containing the table result
+     *
+     * @see MFXTableView
+     */
     private VBox createTableResult() {
         VBox vbox = new VBox();
         vbox.setPadding(new Insets(10));
@@ -442,6 +519,16 @@ public class QueryView {
         return vbox;
     }
 
+    /**
+     * Creates a {@link VBox} containing a graph result with export and zoom functionalities.
+     * <p>
+     * Use a {@link Digraph} to display the graph.
+     * </p>
+     *
+     * @return a {@link VBox} containing the graph result
+     *
+     * @see Digraph
+     */
     private VBox createGraphResult() {
         VBox vbox = new VBox();
         vbox.setPadding(new Insets(10));
@@ -552,6 +639,13 @@ public class QueryView {
 
     /* Import method */
 
+    /**
+     * Imports a query file and loads its content into the provided {@link CodeArea}.
+     *
+     * @param codeArea the {@link CodeArea} to load the content into.
+     * @param ownerWindow the parent window.
+     * @param tab the currently selected tab.
+     */
     private void importFile(CodeArea codeArea, Window ownerWindow, Tab tab) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Open File");
@@ -577,6 +671,12 @@ public class QueryView {
 
     /* Export methods */
 
+    /**
+     * Exports the content of the provided {@link CodeArea} to a query file.
+     *
+     * @param codeArea the {@link CodeArea} containing the content to export.
+     * @param ownerWindow the parent window.
+     */
     private void exportFile(CodeArea codeArea, Window ownerWindow) {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save File");
@@ -596,6 +696,11 @@ public class QueryView {
         }
     }
 
+    /**
+     * Exports the text data to a .txt file using a {@link FileChooser} dialog.
+     * If the user selects a file without a .txt extension, the method automatically adds the .txt extension.
+     * Displays an error alert if an IOException occurs during file writing.
+     */
     private void exportText() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Text File");
@@ -615,6 +720,12 @@ public class QueryView {
             }        }
     }
 
+    /**
+     * Exports the table data to a .csv file using a {@link FileChooser} dialog.
+     * If the user selects a file without a .csv extension, the method automatically adds the .csv extension.
+     * The table data is written in CSV format.
+     * Displays an error alert if an IOException occurs during file writing.
+     */
     private void exportTable() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save CSV File");
@@ -642,6 +753,12 @@ public class QueryView {
         }
     }
 
+    /**
+     * Exports the current graph view as a PNG image using a {@link FileChooser} dialog.
+     * If the user selects a file without a .png extension, the method automatically adds the .png extension.
+     * Takes a snapshot of the graph view and saves it as an image file.
+     * Displays an error alert if an IOException occurs during image saving.
+     */
     private void exportGraphAsImage() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Save Image");
@@ -669,6 +786,12 @@ public class QueryView {
 
     /* Alert method */
 
+    /**
+     * Displays an {@link Alert} dialog with the given title and message.
+     *
+     * @param title   the title of the alert dialog
+     * @param message the message to be displayed in the alert dialog
+     */
     private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR, message, ButtonType.OK);
         alert.setTitle(title);
@@ -677,6 +800,12 @@ public class QueryView {
 
     /* Method for syntax highlighting */
 
+    /**
+     * Computes syntax highlighting spans for the given SPARQL query text.
+     *
+     * @param text the SPARQL query text.
+     * @return a {@link StyleSpans<Collection<String>>} containing the syntax highlighting spans.
+     */
     private StyleSpans<Collection<String>> computeHighlighting(String text) {
         Matcher matcher = SPARQL_PATTERN.matcher(text);
         int lastKwEnd = 0;
@@ -701,5 +830,4 @@ public class QueryView {
         spansBuilder.add(Collections.emptyList(), text.length() - lastKwEnd);
         return spansBuilder.create();
     }
-
 }

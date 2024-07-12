@@ -4,10 +4,11 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 import org.fxmisc.richtext.CodeArea;
@@ -15,8 +16,7 @@ import org.fxmisc.richtext.LineNumberFactory;
 import org.fxmisc.richtext.model.StyleSpans;
 import org.fxmisc.richtext.model.StyleSpansBuilder;
 import org.kordamp.ikonli.javafx.FontIcon;
-import org.kordamp.ikonli.javafx.Icon;
-import org.kordamp.ikonli.materialdesign2.*;
+import org.kordamp.ikonli.materialdesign2.MaterialDesignP;
 
 import java.time.Duration;
 import java.util.Collection;
@@ -24,6 +24,9 @@ import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * The {@link  ValidationView} class provides a user interface for editing and validating SHACL (Shapes Constraint Language) files.
+ */
 public class ValidationView {
 
     private EditorModule editorModule = new EditorModule();
@@ -52,11 +55,21 @@ public class ValidationView {
                     + "|(?<CONSTRAINT>" + CONSTRAINT_PATTERN + ")"
     );
 
+    /**
+     * Returns the main {@link ValidationView} as a {@link VBox}.
+     *
+     * @return a {@link VBox} containing the validation view.
+     */
     public VBox getView() {
         VBox validation = createValidation();
         return validation;
     }
 
+    /**
+     * Creates the {@link ValidationView} layout.
+     *
+     * @return a {@link VBox} containing the {@link ValidationView} layout.
+     */
     public VBox createValidation() {
         VBox vbValidation = new VBox();
         vbValidation.setSpacing(10);
@@ -77,6 +90,7 @@ public class ValidationView {
      * </p>
      *
      * @return an {@link HBox} containing the editor content.
+     *
      * @see HBox
      * @see TabPane
      *
@@ -138,6 +152,19 @@ public class ValidationView {
         return hbCenter;
     }
 
+    /**
+     * This method is called in {@link #createEditorContent()} to create the content of a new {@link Tab}.
+     * <p>
+     * It instantiates a {@link CodeArea}.
+     * </p>
+     *
+     * @return a {@link VBox} containing the content of a new {@link Tab}.
+     *
+     * @see #createEditorContent()
+     * @see Tab
+     * @see CodeArea
+     * @see VBox
+     */
     private VBox createTabContent() {
 
         VBox tabContent = new VBox();
@@ -232,6 +259,11 @@ public class ValidationView {
 
     /* Validation result */
 
+    /**
+     * Creates the content area for displaying validation results.
+     *
+     * @return a {@link VBox} containing the result content.
+     */
     public VBox createResultContent() {
         VBox vbox = new VBox();
         VBox.setVgrow(vbox, Priority.ALWAYS);
@@ -243,6 +275,16 @@ public class ValidationView {
 
     /* Method for syntax highlighting */
 
+    /**
+     * Computes the syntax highlighting for SHACL text.
+     * <p>
+     * This method uses regular expressions to match different SHACL constructs and applies appropriate styles.
+     * </p>
+     *
+     * @param text the SHACL text to highlight.
+     *
+     * @return a {@link StyleSpans} object containing the styles for the text.
+     */
     private StyleSpans<Collection<String>> computeHighlighting(String text) {
         Matcher matcher = SHACL_PATTERN.matcher(text);
         StyleSpansBuilder<Collection<String>> spansBuilder = new StyleSpansBuilder<>();
