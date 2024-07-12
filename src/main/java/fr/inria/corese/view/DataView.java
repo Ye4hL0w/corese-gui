@@ -27,6 +27,17 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.Optional;
 
+/**
+ * {@link DataView} is a JavaFX component with the role of view in the code architecture.
+ * <p>
+ * It displays the content of the DataView tab of {@link fr.inria.corese.app.MenuUI}.
+ * </p>
+ *
+ * @version 1.0
+ * @since April 2024
+ * @see DataView
+ * @see fr.inria.corese.app.MenuUI
+ */
 public class DataView {
 
     public VBox vbCenter;
@@ -38,10 +49,31 @@ public class DataView {
 
     private DataController dataController;
 
+    /**
+     * Constructor for DataView.
+     * <p>
+     * Allows you to retrieve the instance of {@link DataController}.
+     * </p>
+     *
+     * @param dataController the controller for managing data operations.
+     */
     public DataView(DataController dataController) {
         this.dataController = dataController;
     }
 
+    /**
+     * Returns the {@link VBox } containing all {@link DataView} views.
+     *
+     * <p>
+     * The method instantiates the contents of {@link DataView} in {@link fr.inria.corese.app.App}.
+     * </p>
+     *
+     * @return {@link VBox} representing the main view of the DataView.
+     *
+     * @see VBox
+     * @see DataView
+     * @see fr.inria.corese.app.App
+     */
     public VBox getView() {
         VBox data = createData();
         return data;
@@ -49,6 +81,19 @@ public class DataView {
 
     /* First display */
 
+    /**
+     * Creates the initial layout and content of the DataView.
+     * <p>
+     * This method initializes the content views (files, RDF, logs, stats) and arranges them within a grid layout using {@link FilesContentView}, {@link RdfContentView}, {@link LogsContentView}, {@link StatsContentView}.
+     * </p>
+     *
+     * @return a {@link VBox} containing the DataView layout and content.
+     *
+     * @see FilesContentView
+     * @see RdfContentView
+     * @see LogsContentView
+     * @see StatsContentView
+     */
     public VBox createData()  {
         vbCenter = new VBox();
         vbCenter.setPadding(new Insets(20));
@@ -165,6 +210,14 @@ public class DataView {
 
     /* Files loaded Pop-Up */
 
+    /**
+     * Displays a pop-up {@link Alert} to indicate that files have been loaded.
+     * <p>
+     * The alert will automatically close after 2 seconds.
+     * </p>
+     *
+     * @see Alert
+     */
     public void showFilesLoadedPopup() {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle("Alert");

@@ -77,12 +77,6 @@ public class EditorView {
 
     /**
      * Constructor for {@link EditorView}.
-     * <p>
-     * Initializes the {@code mainView} with {@link #createRDFeditor()} and the {@code editorContent} with {@link #createEditorContent()}.
-     * </p>
-     * <p>
-     * Shows the main view at startup.
-     * </p>
      *
      * @see EditorView
      * @see #createRDFeditor()

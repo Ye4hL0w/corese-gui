@@ -213,7 +213,6 @@ public class FilesContentView {
         });
     }
 
-
     /* About file */
 
     public void showFileInfoPopup(File file) {

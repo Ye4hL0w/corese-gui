@@ -229,7 +229,7 @@ public class QueryView {
         Tooltip.install(exportIcon, exportTooltip);
 
         StackPane.setAlignment(exportIcon, Pos.TOP_RIGHT);
-        StackPane.setMargin(exportIcon, new Insets(60,25,0,0));
+        StackPane.setMargin(exportIcon, new Insets(65,25,0,0));
 
         /* Run icon */
 
@@ -401,7 +401,7 @@ public class QueryView {
         textData  = new Label("Text");
         vbox.getChildren().addAll(hBox, textData);
 
-        textData.setText(queryController.getXMLResult());
+//        textData.setText(queryController.getXMLResult());
 
         return vbox;
     }

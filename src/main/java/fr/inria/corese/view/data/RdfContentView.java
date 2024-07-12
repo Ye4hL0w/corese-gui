@@ -5,6 +5,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TitledPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
@@ -57,6 +58,10 @@ public class RdfContentView {
     public CheckBox createHyperlinkCheckBox(String text, String url) {
         CheckBox checkBox = new CheckBox(text);
         checkBox.getStyleClass().add("check-box");
+
+        Tooltip tooltip = new Tooltip("Right click");
+        tooltip.setStyle("-fx-font-size: 14;");
+        Tooltip.install(checkBox, tooltip);
 
         checkBox.setOnMouseClicked(event -> {
             if (event.getButton() == MouseButton.SECONDARY) {
